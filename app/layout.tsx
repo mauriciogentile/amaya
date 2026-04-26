@@ -7,9 +7,9 @@ const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "FitTrack",
-  description: "Sophisticated workout tracking",
+  description: "Train smarter. Track everything.",
   manifest: "/manifest.json",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "FitTrack" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Amaya" },
 };
 
 export const viewport: Viewport = {

@@ -1,7 +1,7 @@
 {
-  "name": "FitTrack",
-  "short_name": "FitTrack",
-  "description": "Sophisticated workout tracking",
+  "name": "Amaya",
+  "short_name": "Amaya",
+  "description": "Train smarter. Track everything.",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#000000",
