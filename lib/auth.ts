@@ -39,7 +39,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         await connectDB();
         let dbUser = await User.findOne({ email: user.email });
         if (!dbUser) {
-          dbUser = await User.create({ name: user.name, email: user.email, image: user.image });
+          const parts = (user.name || "").trim().split(" ");
+          const firstName = parts[0] || "";
+          const lastName = parts.slice(1).join(" ") || "";
+          dbUser = await User.create({
+            name: user.name,
+            firstName,
+            lastName,
+            email: user.email,
+            image: user.image,
+            onboarded: false,
+          });
         }
         user.id = dbUser._id.toString();
       }
