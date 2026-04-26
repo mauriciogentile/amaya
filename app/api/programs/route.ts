@@ -3,10 +3,13 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Program from "@/lib/models/Program";
 
+export const dynamic = "force-dynamic";
+
 async function seedProgram(userId: string) {
-  const count = await Program.countDocuments({ userId });
-  if (count > 0) return;
-  await Program.create({
+  try {
+    const count = await Program.countDocuments({ userId });
+    if (count > 0) return;
+    await Program.create({
     userId,
     name: "Push Pull Legs (PPL)",
     description: "6-day strength program for intermediate lifters",
@@ -20,7 +23,10 @@ async function seedProgram(userId: string) {
       { name: "Pull B", order: 5, description: "Back, biceps, rear delts" },
       { name: "Legs B", order: 6, description: "Quads, hamstrings, calves" },
     ],
-  });
+    });
+  } catch (e) {
+    console.error("seedProgram error:", e);
+  }
 }
 
 export async function GET() {
