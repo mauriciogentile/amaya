@@ -219,16 +219,16 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
               {!isCollapsed && (
                 <div className="px-4 pb-4 space-y-2">
                   {/* Column headers */}
-                  <div className="grid grid-cols-[28px_1fr_1fr_32px] gap-2 text-xs text-zinc-600 px-1 mb-1">
-                    <span>Set</span>
-                    <span>Weight (kg)</span>
-                    <span>Reps</span>
+                  <div className="grid grid-cols-[28px_1fr_1fr_32px] gap-2 text-xs text-zinc-600 mb-1">
+                    <span className="text-center">Set</span>
+                    <span className="text-center">Weight (kg)</span>
+                    <span className="text-center">Reps</span>
                     <span />
                   </div>
 
                   {ex.sets.map((set, si) => (
                     <div key={si} className={`grid grid-cols-[28px_1fr_1fr_32px] gap-2 items-center transition-opacity ${set.done ? "opacity-60" : ""}`}>
-                      <span className="text-xs text-zinc-500 text-center">{set.setNumber}</span>
+                      <span className="text-xs text-zinc-500 text-center font-medium">{set.setNumber}</span>
                       <input
                         type="number"
                         inputMode="decimal"
