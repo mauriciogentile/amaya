@@ -4,17 +4,22 @@ import { useRouter } from "next/navigation";
 import { Dumbbell } from "lucide-react";
 
 const GOALS = [
-  { value: "strength",     label: "💪 Build Strength",   desc: "Lift heavier over time" },
-  { value: "hypertrophy",  label: "🏋️ Build Muscle",     desc: "Maximize muscle growth" },
-  { value: "endurance",    label: "🏃 Build Endurance",  desc: "Train longer, harder" },
-  { value: "weight_loss",  label: "🔥 Lose Weight",      desc: "Burn fat, stay fit" },
-  { value: "general",      label: "⚡ Stay Fit",          desc: "General fitness & health" },
+  { value: "strength",    label: "💪 Build Strength",  desc: "Lift heavier over time" },
+  { value: "hypertrophy", label: "🏋️ Build Muscle",    desc: "Maximize muscle growth" },
+  { value: "endurance",   label: "🏃 Build Endurance", desc: "Train longer, harder" },
+  { value: "weight_loss", label: "🔥 Lose Weight",     desc: "Burn fat, stay fit" },
+  { value: "general",     label: "⚡ Stay Fit",         desc: "General fitness & health" },
 ];
+
+const TOTAL_STEPS = 3;
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [data, setData] = useState({ goal: "", units: "metric", weightKg: "", heightCm: "", age: "" });
+  const [data, setData] = useState({
+    firstName: "", lastName: "",
+    goal: "", units: "metric", weightKg: "", heightCm: "", age: "",
+  });
   const [loading, setLoading] = useState(false);
 
   async function finish() {
@@ -33,15 +38,56 @@ export default function OnboardingPage() {
       <div className="flex items-center gap-2 mb-8">
         <Dumbbell className="w-6 h-6 text-emerald-400" />
         <span className="text-lg font-bold">Amaya</span>
-        <span className="ml-auto text-sm text-zinc-500">{step}/2</span>
+        <span className="ml-auto text-sm text-zinc-500">{step}/{TOTAL_STEPS}</span>
       </div>
 
       {/* Progress bar */}
       <div className="w-full bg-zinc-800 rounded-full h-1 mb-8">
-        <div className="bg-emerald-400 h-1 rounded-full transition-all" style={{ width: `${(step/2)*100}%` }} />
+        <div className="bg-emerald-400 h-1 rounded-full transition-all" style={{ width: `${(step / TOTAL_STEPS) * 100}%` }} />
       </div>
 
+      {/* Step 1 — Name */}
       {step === 1 && (
+        <div className="flex-1 space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold">What's your name?</h1>
+            <p className="text-zinc-500 text-sm mt-1">Let's make this personal.</p>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm text-zinc-400 mb-1 block">First Name</label>
+              <input
+                autoFocus
+                type="text"
+                placeholder="John"
+                value={data.firstName}
+                onChange={e => setData(d => ({ ...d, firstName: e.target.value }))}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-400"
+              />
+            </div>
+            <div>
+              <label className="text-sm text-zinc-400 mb-1 block">Last Name</label>
+              <input
+                type="text"
+                placeholder="Smith"
+                value={data.lastName}
+                onChange={e => setData(d => ({ ...d, lastName: e.target.value }))}
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-400"
+              />
+            </div>
+          </div>
+          <button
+            disabled={!data.firstName.trim()}
+            onClick={() => setStep(2)}
+            className="w-full bg-emerald-500 disabled:opacity-40 text-black font-bold h-12 rounded-2xl transition-colors mt-4"
+          >
+            Continue
+          </button>
+        </div>
+      )}
+
+      {/* Step 2 — Goal */}
+      {step === 2 && (
         <div className="flex-1 space-y-6">
           <div>
             <h1 className="text-2xl font-bold">What's your main goal?</h1>
@@ -60,14 +106,21 @@ export default function OnboardingPage() {
               </button>
             ))}
           </div>
-          <button disabled={!data.goal} onClick={() => setStep(2)}
-            className="w-full bg-emerald-500 disabled:opacity-40 text-black font-bold h-12 rounded-2xl transition-colors mt-4">
-            Continue
-          </button>
+          <div className="flex gap-3">
+            <button onClick={() => setStep(1)}
+              className="px-5 h-12 rounded-2xl border border-zinc-700 text-zinc-400 font-semibold">
+              Back
+            </button>
+            <button disabled={!data.goal} onClick={() => setStep(3)}
+              className="flex-1 bg-emerald-500 disabled:opacity-40 text-black font-bold h-12 rounded-2xl transition-colors">
+              Continue
+            </button>
+          </div>
         </div>
       )}
 
-      {step === 2 && (
+      {/* Step 3 — Stats */}
+      {step === 3 && (
         <div className="flex-1 space-y-6">
           <div>
             <h1 className="text-2xl font-bold">A few quick stats</h1>
@@ -77,8 +130,8 @@ export default function OnboardingPage() {
           <div className="space-y-4">
             {/* Units toggle */}
             <div className="flex rounded-xl overflow-hidden border border-zinc-800">
-              {["metric","imperial"].map(u => (
-                <button key={u} onClick={() => setData(d => ({...d, units: u}))}
+              {["metric", "imperial"].map(u => (
+                <button key={u} onClick={() => setData(d => ({ ...d, units: u }))}
                   className={`flex-1 py-2 text-sm font-medium transition-colors ${
                     data.units === u ? "bg-emerald-500 text-black" : "bg-zinc-900 text-zinc-400"
                   }`}>
@@ -88,27 +141,33 @@ export default function OnboardingPage() {
             </div>
 
             {[
-              { key: "age",      label: "Age",    placeholder: "e.g. 28",  type: "number" },
-              { key: "weightKg", label: data.units === "metric" ? "Weight (kg)" : "Weight (lbs)", placeholder: data.units === "metric" ? "e.g. 80" : "e.g. 176", type: "number" },
-              { key: "heightCm", label: data.units === "metric" ? "Height (cm)" : "Height (in)",  placeholder: data.units === "metric" ? "e.g. 178" : "e.g. 70",  type: "number" },
-            ].map(({ key, label, placeholder, type }) => (
+              { key: "age",      label: "Age",    placeholder: "e.g. 28" },
+              { key: "weightKg", label: data.units === "metric" ? "Weight (kg)" : "Weight (lbs)", placeholder: data.units === "metric" ? "e.g. 80" : "e.g. 176" },
+              { key: "heightCm", label: data.units === "metric" ? "Height (cm)" : "Height (in)",  placeholder: data.units === "metric" ? "e.g. 178" : "e.g. 70" },
+            ].map(({ key, label, placeholder }) => (
               <div key={key}>
                 <label className="text-sm text-zinc-400 mb-1 block">{label}</label>
                 <input
-                  type={type}
+                  type="number"
                   placeholder={placeholder}
                   value={(data as any)[key]}
-                  onChange={e => setData(d => ({...d, [key]: e.target.value}))}
+                  onChange={e => setData(d => ({ ...d, [key]: e.target.value }))}
                   className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-400"
                 />
               </div>
             ))}
           </div>
 
-          <button onClick={finish} disabled={loading}
-            className="w-full bg-emerald-500 disabled:opacity-60 text-black font-bold h-12 rounded-2xl transition-colors">
-            {loading ? "Setting up…" : "Let's go 🚀"}
-          </button>
+          <div className="flex gap-3">
+            <button onClick={() => setStep(2)}
+              className="px-5 h-12 rounded-2xl border border-zinc-700 text-zinc-400 font-semibold">
+              Back
+            </button>
+            <button onClick={finish} disabled={loading}
+              className="flex-1 bg-emerald-500 disabled:opacity-60 text-black font-bold h-12 rounded-2xl transition-colors">
+              {loading ? "Setting up…" : "Let's go 🚀"}
+            </button>
+          </div>
         </div>
       )}
     </div>
