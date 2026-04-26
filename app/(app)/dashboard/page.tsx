@@ -2,9 +2,12 @@ import { currentUser } from "@clerk/nextjs/server";
 import { Dumbbell, Flame, Trophy, TrendingUp, Clock, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
+
+export const dynamic = 'force-dynamic';
 import { connectDB } from "@/lib/db";
 import Workout from "@/lib/models/Workout";
 import Exercise from "@/lib/models/Exercise";
+import { EXERCISES } from "@/lib/exercises-seed";
 import { auth } from "@clerk/nextjs/server";
 
 async function getStats(userId: string) {
@@ -13,7 +16,6 @@ async function getStats(userId: string) {
   // Auto-seed exercises if empty
   const count = await Exercise.countDocuments({ isCustom: false });
   if (count === 0) {
-    const { EXERCISES } = await import("@/lib/exercises-seed");
     await Exercise.insertMany(EXERCISES.map(e => ({ ...e, isCustom: false })));
   }
 
