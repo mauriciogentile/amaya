@@ -2,13 +2,20 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Exercise from "@/lib/models/Exercise";
+import { EXERCISES } from "@/lib/exercises-seed";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   await connectDB();
+
+  // Auto-seed if empty
+  const count = await Exercise.countDocuments();
+  if (count === 0) await Exercise.insertMany(EXERCISES);
+
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q");
   const muscle = searchParams.get("muscle");
