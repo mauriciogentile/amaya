@@ -11,35 +11,36 @@ import { EXERCISES } from "@/lib/exercises-seed";
 export const dynamic = "force-dynamic";
 
 async function getStats(userId: string) {
-  await connectDB();
+  try {
+    await connectDB();
+    const count = await Exercise.countDocuments();
+    if (count === 0) await Exercise.insertMany(EXERCISES);
 
-  // Seed exercises if empty
-  const count = await Exercise.countDocuments();
-  if (count === 0) {
-    await Exercise.insertMany(EXERCISES);
+    const workouts = await Workout.find({ userId }).sort({ startedAt: -1 }).limit(5).lean();
+    const totalWorkouts = await Workout.countDocuments({ userId });
+
+    const recentWorkouts = workouts.map((w: any) => ({
+      id: w._id.toString(),
+      name: w.name || "Workout",
+      date: w.startedAt,
+      duration: w.duration || 0,
+      totalSets: w.exercises?.reduce((acc: number, e: any) => acc + (e.sets?.length || 0), 0) || 0,
+      totalVolume: w.exercises?.reduce((acc: number, e: any) =>
+        acc + (e.sets?.reduce((s: number, set: any) => s + ((set.weight || 0) * (set.reps || 0)), 0) || 0), 0) || 0,
+    }));
+
+    return { totalWorkouts, recentWorkouts };
+  } catch (e) {
+    console.error("Dashboard getStats error:", e);
+    return { totalWorkouts: 0, recentWorkouts: [] };
   }
-
-  const workouts = await Workout.find({ userId }).sort({ startedAt: -1 }).limit(10).lean();
-  const totalWorkouts = await Workout.countDocuments({ userId });
-
-  const recentWorkouts = workouts.slice(0, 5).map((w: any) => ({
-    id: w._id.toString(),
-    name: w.name || "Workout",
-    date: w.startedAt,
-    duration: w.duration || 0,
-    totalSets: w.exercises?.reduce((acc: number, e: any) => acc + (e.sets?.length || 0), 0) || 0,
-    totalVolume: w.exercises?.reduce((acc: number, e: any) =>
-      acc + e.sets?.reduce((s: number, set: any) => s + ((set.weight || 0) * (set.reps || 0)), 0), 0) || 0,
-  }));
-
-  return { totalWorkouts, recentWorkouts };
 }
 
 export default async function DashboardPage() {
   const session = await auth();
-  if (!session?.user) redirect("/sign-in");
+  if (!session?.user?.id) redirect("/sign-in");
 
-  const { totalWorkouts, recentWorkouts } = await getStats(session.user.id!);
+  const { totalWorkouts, recentWorkouts } = await getStats(session.user.id);
   const name = session.user.name?.split(" ")[0] || "Athlete";
 
   return (
