@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, MoreHorizontal, Plus, Dumbbell, X, Minus, Check } from "lucide-react";
+import { ExercisePicker } from "@/components/ExercisePicker";
 
 interface DayExercise {
   _id: string;
@@ -60,17 +61,9 @@ function formatRest(seconds: number) {
 const REST_OPTIONS = [30, 45, 60, 90, 120, 150, 180, 240, 300];
 
 function Stepper({
-  label,
-  value,
-  onChange,
-  min = 1,
-  max = 99,
+  label, value, onChange, min = 1, max = 99,
 }: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  min?: number;
-  max?: number;
+  label: string; value: number; onChange: (v: number) => void; min?: number; max?: number;
 }) {
   return (
     <div className="flex flex-col items-center gap-1">
@@ -113,6 +106,10 @@ export default function DayDetailPage({
   const [draft, setDraft] = useState<Partial<DayExercise>>({});
   const [saving, setSaving] = useState(false);
 
+  // Exercise picker
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [addingEx, setAddingEx] = useState(false);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -150,7 +147,6 @@ export default function DayDetailPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(draft),
       });
-      // Update local state
       setDay((prev) => {
         if (!prev) return prev;
         return {
@@ -165,6 +161,23 @@ export default function DayDetailPage({
       setSaving(false);
     }
   }, [editingEx, programId, dayId, draft, closeEdit]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleExerciseSelect = useCallback(async (ex: any) => {
+    if (!programId || !dayId || addingEx) return;
+    setAddingEx(true);
+    try {
+      const res = await fetch(`/api/programs/${programId}/day/${dayId}/exercise`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: ex.name }),
+      });
+      const updatedDay = await res.json();
+      setDay(updatedDay);
+    } finally {
+      setAddingEx(false);
+    }
+  }, [programId, dayId, addingEx]);
 
   if (loading) {
     return (
@@ -242,7 +255,7 @@ export default function DayDetailPage({
                   className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 flex items-center gap-3"
                 >
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${getMuscleColor(ex.muscleGroup)}`}>
-                    {ex.muscleGroup?.slice(0, 2).toUpperCase() ?? "—"}
+                    {ex.muscleGroup?.slice(0, 2).toUpperCase() ?? "💪"}
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -263,7 +276,7 @@ export default function DayDetailPage({
             )}
 
             <button
-              onClick={() => alert("Exercise picker coming soon!")}
+              onClick={() => setPickerOpen(true)}
               className="w-full py-3 flex items-center justify-center gap-2 text-orange-400 text-sm font-medium hover:text-orange-300 transition-colors"
             >
               <Plus size={16} />
@@ -301,21 +314,6 @@ export default function DayDetailPage({
                 </div>
               </div>
             </div>
-
-            {sortedExercises.length > 0 && (
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 space-y-2">
-                <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-2">Muscles Worked</p>
-                {Array.from(new Set(sortedExercises.map((e) => e.muscleGroup).filter(Boolean))).map((mg) => (
-                  <div key={mg} className="flex items-center gap-2">
-                    <div className={`px-2 py-0.5 rounded text-xs font-medium ${getMuscleColor(mg)}`}>{mg}</div>
-                    <span className="text-xs text-zinc-500">
-                      {sortedExercises.filter((e) => e.muscleGroup === mg).length} exercise
-                      {sortedExercises.filter((e) => e.muscleGroup === mg).length > 1 ? "s" : ""}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )}
 
@@ -334,14 +332,8 @@ export default function DayDetailPage({
       {/* Edit Exercise Sheet */}
       {editingEx && (
         <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/60 z-40"
-            onClick={closeEdit}
-          />
-          {/* Bottom sheet */}
+          <div className="fixed inset-0 bg-black/60 z-40" onClick={closeEdit} />
           <div className="fixed bottom-0 inset-x-0 z-50 bg-zinc-900 border-t border-zinc-800 rounded-t-2xl px-4 pt-4 pb-8 max-w-lg mx-auto">
-            {/* Sheet header */}
             <div className="flex items-center justify-between mb-5">
               <div className="min-w-0 flex-1">
                 <p className="text-xs text-zinc-500 uppercase tracking-widest">Editing</p>
@@ -355,32 +347,27 @@ export default function DayDetailPage({
               </button>
             </div>
 
-            {/* Steppers row */}
             <div className="flex justify-around mb-6">
               <Stepper
                 label="Sets"
                 value={draft.sets ?? editingEx.sets}
                 onChange={(v) => setDraft((d) => ({ ...d, sets: v }))}
-                min={1}
-                max={20}
+                min={1} max={20}
               />
               <Stepper
                 label="Min Reps"
                 value={draft.minReps ?? editingEx.minReps}
                 onChange={(v) => setDraft((d) => ({ ...d, minReps: Math.min(v, draft.maxReps ?? editingEx.maxReps) }))}
-                min={1}
-                max={99}
+                min={1} max={99}
               />
               <Stepper
                 label="Max Reps"
                 value={draft.maxReps ?? editingEx.maxReps}
                 onChange={(v) => setDraft((d) => ({ ...d, maxReps: Math.max(v, draft.minReps ?? editingEx.minReps) }))}
-                min={1}
-                max={99}
+                min={1} max={99}
               />
             </div>
 
-            {/* Rest time selector */}
             <div className="mb-6">
               <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">Rest Time</p>
               <div className="flex gap-2 flex-wrap">
@@ -400,7 +387,6 @@ export default function DayDetailPage({
               </div>
             </div>
 
-            {/* Save button */}
             <button
               onClick={saveEdit}
               disabled={saving}
@@ -418,6 +404,13 @@ export default function DayDetailPage({
           </div>
         </>
       )}
+
+      {/* Exercise Picker */}
+      <ExercisePicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onSelect={handleExerciseSelect}
+      />
     </div>
   );
 }

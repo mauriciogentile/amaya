@@ -1,31 +1,33 @@
-import { auth } from "@/lib/auth";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Exercise from "@/lib/models/Exercise";
-import { EXERCISES } from "@/lib/exercises-seed";
+import { auth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   await connectDB();
-
-  // Auto-seed if empty
-  const count = await Exercise.countDocuments();
-  if (count === 0) await Exercise.insertMany(EXERCISES);
-
   const { searchParams } = new URL(req.url);
-  const q = searchParams.get("q");
-  const muscle = searchParams.get("muscle");
-  const equipment = searchParams.get("equipment");
+  const q = searchParams.get("q") || "";
+  const bodyPart = searchParams.get("bodyPart") || "";
+  const equipment = searchParams.get("equipment") || "";
+  const page = parseInt(searchParams.get("page") || "1");
+  const limit = 30;
 
-  const filter: any = {};
-  if (q) filter.name = { $regex: q, $options: "i" };
-  if (muscle && muscle !== "all") filter.muscleGroup = muscle;
-  if (equipment && equipment !== "all") filter.equipment = equipment;
+  const filter: Record<string, unknown> = {};
+  if (q) {
+    filter.name = { $regex: q, $options: "i" };
+  }
+  if (bodyPart) filter.bodyPart = bodyPart;
+  if (equipment) filter.equipment = equipment;
 
-  const exercises = await Exercise.find(filter).limit(100).lean();
-  return NextResponse.json(exercises);
+  const [exercises, total] = await Promise.all([
+    Exercise.find(filter).select("exId name bodyPart equipment target gifUrl imageUrl").skip((page - 1) * limit).limit(limit).lean(),
+    Exercise.countDocuments(filter),
+  ]);
+
+  return NextResponse.json({ exercises, total, page, pages: Math.ceil(total / limit) });
 }
