@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
+import AuthSessionProvider from "@/components/session-provider";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FitTrack",
+  title: "Amaya",
   description: "Train smarter. Track everything.",
   manifest: "/manifest.json",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Amaya" },
@@ -22,12 +22,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
+    <AuthSessionProvider>
       <html lang="en" className="dark">
         <body className={`${geist.className} bg-background text-foreground antialiased`}>
           {children}
         </body>
       </html>
-    </ClerkProvider>
+    </AuthSessionProvider>
   );
 }

@@ -1,28 +1,17 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-export interface IUser extends Document {
-  clerkId: string;
-  name: string;
-  email: string;
-  avatar?: string;
-  age?: number;
-  weightKg?: number;
-  heightCm?: number;
-  goal?: "strength" | "hypertrophy" | "endurance" | "weight_loss" | "general";
-  units: "metric" | "imperial";
-  createdAt: Date;
-}
-
-const UserSchema = new Schema<IUser>({
-  clerkId:   { type: String, required: true, unique: true },
-  name:      { type: String, required: true },
-  email:     { type: String, required: true },
-  avatar:    String,
-  age:       Number,
-  weightKg:  Number,
-  heightCm:  Number,
-  goal:      { type: String, enum: ["strength","hypertrophy","endurance","weight_loss","general"] },
-  units:     { type: String, enum: ["metric","imperial"], default: "metric" },
+const UserSchema = new Schema({
+  name:        { type: String },
+  email:       { type: String, required: true, unique: true },
+  password:    { type: String, select: false },
+  image:       { type: String },
+  // Profile
+  age:         Number,
+  weightKg:    Number,
+  heightCm:    Number,
+  goal:        { type: String, enum: ["lose_fat","build_muscle","maintain","performance","general"], default: "general" },
+  unitSystem:  { type: String, enum: ["metric","imperial"], default: "metric" },
+  onboarded:   { type: Boolean, default: false },
 }, { timestamps: true });
 
-export default mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
+export default mongoose.models.User || mongoose.model("User", UserSchema);

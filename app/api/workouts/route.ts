@@ -1,22 +1,23 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Workout from "@/lib/models/Workout";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   await connectDB();
-  const workouts = await Workout.find({ userId, isComplete: true })
-    .sort({ finishedAt: -1 }).limit(20);
+  const workouts = await Workout.find({ userId: session.user.id }).sort({ startedAt: -1 }).limit(20);
   return NextResponse.json(workouts);
 }
 
 export async function POST(req: Request) {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const body = await req.json();
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   await connectDB();
-  const workout = await Workout.create({ ...body, userId });
+  const body = await req.json();
+  const workout = await Workout.create({ ...body, userId: session.user.id });
   return NextResponse.json(workout);
 }
