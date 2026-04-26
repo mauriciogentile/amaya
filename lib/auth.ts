@@ -36,19 +36,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "google") {
-        try {
-          await connectDB();
-          const existing = await User.findOne({ email: user.email });
-          if (!existing) {
-            const created = await User.create({ name: user.name, email: user.email, image: user.image });
-            user.id = created._id.toString();
-          } else {
-            user.id = existing._id.toString();
-          }
-        } catch (e) {
-          console.error("Google signIn error:", e);
-          // Don't block sign-in if DB fails
+        await connectDB();
+        let dbUser = await User.findOne({ email: user.email });
+        if (!dbUser) {
+          dbUser = await User.create({ name: user.name, email: user.email, image: user.image });
         }
+        user.id = dbUser._id.toString();
       }
       return true;
     },
