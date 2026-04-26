@@ -1,126 +1,229 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { Dumbbell, Flame, Trophy, TrendingUp, Clock, Plus } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import Link from "next/link";
-import { connectDB } from "@/lib/db";
-import Workout from "@/lib/models/Workout";
-import Exercise from "@/lib/models/Exercise";
-import { EXERCISES } from "@/lib/exercises-seed";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Dumbbell, ChevronRight, Clock, MapPin, Zap, Plus } from "lucide-react";
 
-async function getStats(userId: string) {
-  try {
-    await connectDB();
-    const count = await Exercise.countDocuments();
-    if (count === 0) await Exercise.insertMany(EXERCISES);
-
-    const workouts = await Workout.find({ userId }).sort({ startedAt: -1 }).limit(5).lean();
-    const totalWorkouts = await Workout.countDocuments({ userId });
-
-    const recentWorkouts = workouts.map((w: any) => ({
-      id: w._id.toString(),
-      name: w.name || "Workout",
-      date: w.startedAt,
-      duration: w.duration || 0,
-      totalSets: w.exercises?.reduce((acc: number, e: any) => acc + (e.sets?.length || 0), 0) || 0,
-      totalVolume: w.exercises?.reduce((acc: number, e: any) =>
-        acc + (e.sets?.reduce((s: number, set: any) => s + ((set.weight || 0) * (set.reps || 0)), 0) || 0), 0) || 0,
-    }));
-
-    return { totalWorkouts, recentWorkouts };
-  } catch (e) {
-    console.error("Dashboard getStats error:", e);
-    return { totalWorkouts: 0, recentWorkouts: [] };
-  }
+interface ProgramDay {
+  _id: string;
+  name: string;
+  exercises: any[];
 }
 
-export default async function DashboardPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/sign-in");
+interface Program {
+  _id: string;
+  name: string;
+  description?: string;
+  location?: string;
+  days: ProgramDay[];
+  suggestedDayIndex: number;
+  lastWorkoutAt?: string;
+}
 
-  const { totalWorkouts, recentWorkouts } = await getStats(session.user.id);
-  const name = session.user.name?.split(" ")[0] || "Athlete";
+function timeAgo(date?: string) {
+  if (!date) return null;
+  const diff = Date.now() - new Date(date).getTime();
+  const d = Math.floor(diff / 86400000);
+  if (d === 0) return "Today";
+  if (d === 1) return "Yesterday";
+  return `${d}d ago`;
+}
+
+const locationIcon: Record<string, string> = { gym: "🏛️", home: "🏠", outdoor: "🌳" };
+
+export default function LogPage() {
+  const router = useRouter();
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeWorkout, setActiveWorkout] = useState<any>(null);
+  const [selected, setSelected] = useState<{ programId: string; dayIdx: number } | null>(null);
+  const [starting, setStarting] = useState(false);
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/programs/for-workout").then(r => r.json()),
+      fetch("/api/workouts/active").then(r => r.json()),
+    ]).then(([progs, active]) => {
+      setPrograms(Array.isArray(progs) ? progs : []);
+      setActiveWorkout(active);
+      // Pre-select first program's suggested day
+      if (progs?.length > 0) {
+        setSelected({ programId: progs[0]._id, dayIdx: progs[0].suggestedDayIndex });
+      }
+      setLoading(false);
+    });
+  }, []);
+
+  async function startWorkout() {
+    if (!selected) return;
+    setStarting(true);
+    const prog = programs.find(p => p._id === selected.programId)!;
+    const day = prog.days[selected.dayIdx];
+    const res = await fetch("/api/workouts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: `${prog.name} — ${day.name}`,
+        programId: prog._id,
+        dayId: day._id,
+        exercises: day.exercises,
+      }),
+    });
+    const workout = await res.json();
+    router.push(`/workout/${workout._id}`);
+  }
+
+  async function startEmpty() {
+    setStarting(true);
+    const res = await fetch("/api/workouts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "Empty Workout", exercises: [] }),
+    });
+    const workout = await res.json();
+    router.push(`/workout/${workout._id}`);
+  }
+
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen bg-zinc-950">
+      <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-black pb-24">
-      <div className="px-4 pt-14 pb-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-zinc-500 text-sm">Good work,</p>
-            <h1 className="text-2xl font-bold">{name} 💪</h1>
+    <div className="flex flex-col min-h-screen bg-zinc-950 pb-28">
+      <div className="px-4 pt-10 max-w-lg mx-auto w-full">
+        <h1 className="text-2xl font-bold text-white mb-1">Let's train</h1>
+        <p className="text-zinc-500 text-sm mb-6">Pick a plan or start fresh</p>
+
+        {/* Active workout banner */}
+        {activeWorkout && (
+          <button
+            onClick={() => router.push(`/workout/${activeWorkout._id}`)}
+            className="w-full mb-4 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/40 flex items-center gap-3 text-left"
+          >
+            <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+              <Zap size={16} className="text-black" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-emerald-400 font-semibold text-sm">Workout in progress</p>
+              <p className="text-zinc-400 text-xs truncate">{activeWorkout.name}</p>
+            </div>
+            <ChevronRight size={16} className="text-zinc-500" />
+          </button>
+        )}
+
+        {/* Plan cards */}
+        {programs.length === 0 ? (
+          <div className="text-center py-16 space-y-3">
+            <Dumbbell size={40} className="mx-auto text-zinc-700" />
+            <p className="text-zinc-500">No plans yet. Create one in Plans.</p>
           </div>
-          <Link href="/dashboard/workout/new"
-            className="w-10 h-10 bg-emerald-500 rounded-2xl flex items-center justify-center">
-            <Plus className="w-5 h-5 text-black" />
-          </Link>
-        </div>
+        ) : (
+          <div className="space-y-3 mb-4">
+            {programs.map(prog => {
+              const isSel = selected?.programId === prog._id;
+              const selDayIdx = isSel ? selected.dayIdx : prog.suggestedDayIndex;
+              const selDay = prog.days[selDayIdx];
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-3">
-          <Card className="bg-zinc-900 border-zinc-800 rounded-2xl">
-            <CardContent className="p-4 space-y-1">
-              <Dumbbell className="w-5 h-5 text-emerald-400" />
-              <p className="text-2xl font-bold">{totalWorkouts}</p>
-              <p className="text-xs text-zinc-500">Total Workouts</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-zinc-900 border-zinc-800 rounded-2xl">
-            <CardContent className="p-4 space-y-1">
-              <Flame className="w-5 h-5 text-orange-400" />
-              <p className="text-2xl font-bold">—</p>
-              <p className="text-xs text-zinc-500">Day Streak</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-zinc-900 border-zinc-800 rounded-2xl">
-            <CardContent className="p-4 space-y-1">
-              <Trophy className="w-5 h-5 text-yellow-400" />
-              <p className="text-2xl font-bold">—</p>
-              <p className="text-xs text-zinc-500">PRs This Month</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-zinc-900 border-zinc-800 rounded-2xl">
-            <CardContent className="p-4 space-y-1">
-              <TrendingUp className="w-5 h-5 text-blue-400" />
-              <p className="text-2xl font-bold">—</p>
-              <p className="text-xs text-zinc-500">Avg Volume</p>
-            </CardContent>
-          </Card>
-        </div>
+              return (
+                <div
+                  key={prog._id}
+                  className={`rounded-2xl border transition-all overflow-hidden ${
+                    isSel ? "border-emerald-500/50 bg-emerald-500/5" : "border-zinc-800 bg-zinc-900"
+                  }`}
+                >
+                  {/* Program header */}
+                  <button
+                    className="w-full p-4 text-left"
+                    onClick={() => setSelected({ programId: prog._id, dayIdx: prog.suggestedDayIndex })}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-white truncate">{prog.name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-zinc-500">
+                            {locationIcon[prog.location || "gym"]} {prog.location || "gym"}
+                          </span>
+                          {prog.lastWorkoutAt && (
+                            <span className="text-xs text-zinc-600">· {timeAgo(prog.lastWorkoutAt)}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 ${
+                        isSel ? "border-emerald-400 bg-emerald-400" : "border-zinc-700"
+                      }`} />
+                    </div>
+                  </button>
 
-        {/* Start workout CTA */}
-        <Link href="/dashboard/workout/new"
-          className="flex items-center justify-center gap-2 w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold h-14 rounded-2xl transition-colors text-base">
-          <Plus className="w-5 h-5" />
-          Start Workout
-        </Link>
-
-        {/* Recent workouts */}
-        {recentWorkouts.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="font-semibold text-zinc-300">Recent Workouts</h2>
-            {recentWorkouts.map(w => (
-              <Card key={w.id} className="bg-zinc-900 border-zinc-800 rounded-2xl">
-                <CardContent className="p-4 flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{w.name}</p>
-                    <p className="text-xs text-zinc-500">
-                      {new Date(w.date).toLocaleDateString()} · {w.totalSets} sets
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-emerald-400">{w.totalVolume.toLocaleString()} kg</p>
-                    <p className="text-xs text-zinc-500 flex items-center gap-1 justify-end">
-                      <Clock className="w-3 h-3" />{Math.round(w.duration / 60)}m
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  {/* Day selector — only shown when selected */}
+                  {isSel && prog.days.length > 0 && (
+                    <div className="px-4 pb-4 space-y-2">
+                      <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-2">Select day</p>
+                      <div className="flex flex-col gap-2">
+                        {prog.days.map((day, idx) => {
+                          const issugg = idx === prog.suggestedDayIndex && !prog.lastWorkoutAt === false;
+                          return (
+                            <button
+                              key={day._id}
+                              onClick={() => setSelected({ programId: prog._id, dayIdx: idx })}
+                              className={`flex items-center gap-3 p-3 rounded-xl text-left transition-all ${
+                                selDayIdx === idx
+                                  ? "bg-emerald-500/20 border border-emerald-500/40"
+                                  : "bg-zinc-800/50 border border-transparent"
+                              }`}
+                            >
+                              <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                                selDayIdx === idx ? "bg-emerald-500 text-black" : "bg-zinc-700 text-zinc-400"
+                              }`}>
+                                {idx + 1}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm font-medium ${selDayIdx === idx ? "text-white" : "text-zinc-400"}`}>
+                                  {day.name}
+                                </p>
+                                <p className="text-xs text-zinc-600">
+                                  {day.exercises?.length || 0} exercises
+                                </p>
+                              </div>
+                              {idx === prog.suggestedDayIndex && (
+                                <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full flex-shrink-0">
+                                  Next up
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
+
+        {/* Start button */}
+        {selected && (
+          <button
+            onClick={startWorkout}
+            disabled={starting}
+            className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg transition-colors flex items-center justify-center gap-2 mb-3"
+          >
+            <Dumbbell size={20} />
+            {starting ? "Starting…" : "Start Workout"}
+          </button>
+        )}
+
+        {/* Empty / freestyle option */}
+        <button
+          onClick={startEmpty}
+          disabled={starting}
+          className="w-full py-3.5 rounded-2xl border border-zinc-800 text-zinc-400 font-semibold flex items-center justify-center gap-2 hover:border-zinc-700 transition-colors"
+        >
+          <Plus size={16} />
+          Start empty workout
+        </button>
       </div>
     </div>
   );
