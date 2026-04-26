@@ -1,18 +1,16 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import { MongoDBAdapter } from "@auth/mongodb-adapter";
-import clientPromise from "@/lib/mongodb-client";
 import { connectDB } from "@/lib/db";
 import User from "@/lib/models/User";
 import bcrypt from "bcryptjs";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: MongoDBAdapter(clientPromise),
+  secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/sign-in",
-    newUser: "/onboarding",
+    error: "/sign-in",
   },
   providers: [
     Google({
@@ -36,6 +34,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      // For Google sign-in, create user in MongoDB if doesn't exist
+      if (account?.provider === "google") {
+        await connectDB();
+        const existing = await User.findOne({ email: user.email });
+        if (!existing) {
+          const created = await User.create({ name: user.name, email: user.email, image: user.image });
+          user.id = created._id.toString();
+        } else {
+          user.id = existing._id.toString();
+        }
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) token.id = user.id;
       return token;
