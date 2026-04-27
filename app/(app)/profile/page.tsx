@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { Check, LogOut, ChevronDown } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Check, LogOut, Sun, Moon } from "lucide-react";
 
 interface Profile {
   firstName: string;
@@ -49,6 +50,7 @@ function Field({
 
 export default function ProfilePage() {
   const { data: session } = useSession();
+  const { resolvedTheme, setTheme } = useTheme();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [draft, setDraft] = useState<Partial<Profile>>({});
   const [saving, setSaving] = useState(false);
@@ -120,6 +122,20 @@ export default function ProfilePage() {
           <div className="text-center">
             <p className="text-lg font-bold text-white">{fullName || "Your Name"}</p>
             <p className="text-sm text-zinc-500">{profile?.email}</p>
+          </div>
+        </div>
+
+        {/* Appearance */}
+        <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">Appearance</p>
+            <button
+              onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+              className="p-2 rounded-lg border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+              aria-label="Toggle theme"
+            >
+              {resolvedTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
           </div>
         </div>
 
