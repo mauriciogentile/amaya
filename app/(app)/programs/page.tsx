@@ -53,13 +53,13 @@ export default function ProgramsPage() {
   }, []);
 
   return (
-    <div className="px-4 pt-6 pb-4 space-y-4 max-w-lg mx-auto">
+    <div className="px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-4 space-y-4 max-w-lg mx-auto w-full">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Plans</h1>
         <button
           onClick={() => alert("Coming soon — program builder is in the works!")}
-          className="w-9 h-9 flex items-center justify-center rounded-full bg-muted text-foreground hover:bg-muted/80 transition-colors"
+          className="w-11 h-11 flex items-center justify-center rounded-full bg-muted text-foreground hover:bg-muted/80 transition-colors"
         >
           <Plus size={20} />
         </button>
@@ -85,7 +85,7 @@ export default function ProgramsPage() {
             <button
               key={program._id}
               onClick={() => router.push(`/programs/${program._id}`)}
-              className="w-full text-left rounded-xl border border-border bg-card p-4 flex items-start gap-3 hover:bg-muted/50 transition-colors"
+              className="w-full text-left rounded-xl border border-border bg-card p-4 flex items-start gap-3 hover:bg-muted/50 transition-colors min-h-[52px]"
             >
               <div className="flex-1 space-y-2 min-w-0">
                 <p className="font-semibold text-foreground truncate">{program.name}</p>

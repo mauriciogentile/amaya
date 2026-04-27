@@ -91,8 +91,8 @@ export default function LogPage() {
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-background pb-28">
-      <div className="px-4 pt-10 max-w-lg mx-auto w-full">
+    <div className="flex flex-col min-h-screen bg-background">
+      <div className="px-4 pt-[calc(2.5rem+env(safe-area-inset-top))] pb-8 max-w-lg mx-auto w-full">
         <h1 className="text-2xl font-bold text-foreground mb-1">Let's train</h1>
         <p className="text-muted-foreground text-sm mb-6">Pick a plan or start fresh</p>
 
@@ -209,6 +209,7 @@ export default function LogPage() {
             onClick={startWorkout}
             disabled={starting}
             className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg transition-colors flex items-center justify-center gap-2 mb-3"
+            aria-label="Start Workout"
           >
             <Dumbbell size={20} />
             {starting ? "Starting…" : "Start Workout"}

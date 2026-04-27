@@ -118,7 +118,7 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <div className="px-4 pt-10 pb-28 max-w-lg mx-auto w-full space-y-6">
+      <div className="px-4 pt-[calc(2.5rem+env(safe-area-inset-top))] pb-8 max-w-lg mx-auto w-full space-y-6">
         {/* Avatar */}
         <div className="flex flex-col items-center gap-3 pt-2 pb-4">
           <Avatar name={fullName} image={profile?.image} />
@@ -134,7 +134,7 @@ export default function ProfilePage() {
             <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">Appearance</p>
             <button
               onClick={() => mounted && setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-              className="p-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground transition-colors"
+              className="w-11 h-11 flex items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground transition-colors"
               aria-label="Toggle theme"
             >
               {resolvedTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
@@ -213,7 +213,7 @@ export default function ProfilePage() {
         <button
           onClick={save}
           disabled={saving}
-          className={`w-full py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all ${
+          className={`w-full py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all min-h-[44px] ${
             saved ? "bg-green-500 text-foreground" : "bg-orange-500 hover:bg-orange-400 text-foreground"
           }`}
         >
@@ -223,7 +223,7 @@ export default function ProfilePage() {
         {/* Sign out */}
         <button
           onClick={() => signOut({ callbackUrl: "/sign-in" })}
-          className="w-full py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 text-red-400 border border-red-900/50 hover:bg-red-950/30 transition-colors"
+          className="w-full py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 text-red-400 border border-red-900/50 hover:bg-red-950/30 transition-colors min-h-[44px]"
         >
           <LogOut size={16} />
           Sign Out

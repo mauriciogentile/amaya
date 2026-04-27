@@ -26,8 +26,8 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
-      <div className="w-full max-w-sm space-y-8">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+      <div className="w-full max-w-sm space-y-8 py-8">
         {/* Logo */}
         <div className="text-center space-y-2">
           <div className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center mx-auto">
@@ -71,7 +71,7 @@ export default function SignInPage() {
                 placeholder="••••••••"
                 className="w-full bg-card border border-border rounded-2xl px-4 py-3 text-sm outline-none focus:border-emerald-500 transition-colors pr-11" />
               <button type="button" onClick={() => setShowPw(s => !s)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground w-11 h-11 flex items-center justify-center">
                 {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>

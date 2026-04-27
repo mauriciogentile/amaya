@@ -69,12 +69,12 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ id: st
   const sortedDays = [...program.days].sort((a, b) => a.order - b.order);
 
   return (
-    <div className="px-4 pt-6 pb-4 max-w-lg mx-auto space-y-4">
+    <div className="px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-4 max-w-lg mx-auto w-full space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
         <button
           onClick={() => router.back()}
-          className="w-9 h-9 flex items-center justify-center rounded-full bg-muted text-foreground hover:bg-muted/80 transition-colors shrink-0"
+          className="w-11 h-11 flex items-center justify-center rounded-full bg-muted text-foreground hover:bg-muted/80 transition-colors shrink-0"
         >
           <ArrowLeft size={18} />
         </button>
@@ -107,7 +107,7 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ id: st
             <button
               key={day._id}
               onClick={() => router.push(`/programs/${programId}/day/${day._id}`)}
-              className="w-full text-left rounded-xl border border-border bg-card px-4 py-3 flex items-center gap-3 hover:bg-muted/60 transition-colors"
+              className="w-full text-left rounded-xl border border-border bg-card px-4 py-3 flex items-center gap-3 hover:bg-muted/60 transition-colors min-h-[52px]"
             >
               <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
                 {idx + 1}

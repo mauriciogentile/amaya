@@ -169,7 +169,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
       {resting && <RestTimer seconds={resting.seconds} onDone={() => setResting(null)} />}
 
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))]">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div>
             <p className="text-foreground font-bold truncate max-w-[200px]">{workout.name}</p>
@@ -181,7 +181,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
           <button
             onClick={finish}
             disabled={finishing}
-            className="bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-bold px-4 py-2 rounded-xl transition-colors"
+            className="bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-bold px-4 py-2 rounded-xl transition-colors min-h-[44px]"
           >
             {finishing ? "Saving…" : "Finish"}
           </button>
@@ -278,7 +278,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
       </div>
 
       {/* Floating finish bar */}
-      <div className="fixed bottom-0 inset-x-0 p-4 bg-background/95 backdrop-blur border-t border-border z-40">
+      <div className="fixed bottom-0 inset-x-0 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-background/95 backdrop-blur border-t border-border z-40">
         <div className="max-w-lg mx-auto">
           <button
             onClick={finish}

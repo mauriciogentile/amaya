@@ -206,11 +206,11 @@ export default function DayDetailPage({
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
-      <div className="px-4 pt-6 pb-0 max-w-lg mx-auto w-full">
+      <div className="px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-0 max-w-lg mx-auto w-full">
         <div className="flex items-center gap-3 mb-4">
           <button
             onClick={() => router.back()}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-muted text-foreground hover:bg-muted transition-colors shrink-0"
+            className="w-11 h-11 flex items-center justify-center rounded-full bg-muted text-foreground hover:bg-muted transition-colors shrink-0"
           >
             <ArrowLeft size={18} />
           </button>
@@ -267,7 +267,7 @@ export default function DayDetailPage({
 
                   <button
                     onClick={() => openEdit(ex)}
-                    className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-muted-foreground transition-colors shrink-0"
+                    className="w-11 h-11 flex items-center justify-center text-muted-foreground hover:text-muted-foreground transition-colors shrink-0"
                   >
                     <MoreHorizontal size={18} />
                   </button>
@@ -341,7 +341,7 @@ export default function DayDetailPage({
               </div>
               <button
                 onClick={closeEdit}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground ml-3 shrink-0"
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground ml-3 shrink-0"
               >
                 <X size={16} />
               </button>
@@ -390,7 +390,7 @@ export default function DayDetailPage({
             <button
               onClick={saveEdit}
               disabled={saving}
-              className="w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-400 disabled:opacity-50 text-foreground font-semibold flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-400 disabled:opacity-50 text-foreground font-semibold flex items-center justify-center gap-2 transition-colors min-h-[44px]"
             >
               {saving ? (
                 <span className="text-sm">Saving...</span>

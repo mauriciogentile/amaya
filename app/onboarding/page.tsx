@@ -33,7 +33,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col px-6 pt-12 pb-8 max-w-sm mx-auto">
+    <div className="min-h-screen bg-background text-foreground flex flex-col px-6 pt-[calc(3rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))] max-w-sm mx-auto">
       {/* Header */}
       <div className="flex items-center gap-2 mb-8">
         <Dumbbell className="w-6 h-6 text-emerald-400" />

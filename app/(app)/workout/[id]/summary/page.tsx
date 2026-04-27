@@ -34,7 +34,7 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-background items-center justify-center px-4 pb-24">
+    <div className="flex flex-col min-h-screen bg-background items-center justify-center px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[env(safe-area-inset-top)]">
       <div className="max-w-lg w-full space-y-6">
         {/* Trophy */}
         <div className="text-center space-y-2">
@@ -78,7 +78,7 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
 
         <button
           onClick={() => router.push("/dashboard")}
-          className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-2xl transition-colors flex items-center justify-center gap-2"
+          className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-2xl transition-colors flex items-center justify-center gap-2 min-h-[44px]"
         >
           <Home size={18} />
           Back to Home
