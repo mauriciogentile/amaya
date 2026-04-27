@@ -51,11 +51,14 @@ function Field({
 export default function ProfilePage() {
   const { data: session } = useSession();
   const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [draft, setDraft] = useState<Partial<Profile>>({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [unitSystem, setUnitSystem] = useState<"metric" | "imperial">("metric");
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     fetch("/api/profile").then(r => r.json()).then(data => {
@@ -130,7 +133,7 @@ export default function ProfilePage() {
           <div className="flex items-center justify-between">
             <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">Appearance</p>
             <button
-              onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+              onClick={() => mounted && setTheme(resolvedTheme === "dark" ? "light" : "dark")}
               className="p-2 rounded-lg border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
               aria-label="Toggle theme"
             >
