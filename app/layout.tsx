@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <AuthSessionProvider>
       <html lang="en" suppressHydrationWarning>
         <body className={`${geist.className} bg-background text-foreground antialiased`}>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
             {children}
           </ThemeProvider>
         </body>

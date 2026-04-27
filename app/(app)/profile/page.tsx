@@ -13,6 +13,7 @@ interface Profile {
   weightKg?: number;
   heightCm?: number;
   unitSystem?: "metric" | "imperial";
+  theme?: "light" | "dark";
 }
 
 function Avatar({ name, image }: { name: string; image?: string }) {
@@ -70,6 +71,7 @@ export default function ProfilePage() {
         heightCm: data.heightCm,
       });
       setUnitSystem(data.unitSystem || "metric");
+      if (data.theme) setTheme(data.theme);
     });
   }, []);
 
@@ -133,7 +135,12 @@ export default function ProfilePage() {
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">Appearance</p>
             <button
-              onClick={() => mounted && setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+              onClick={async () => {
+                if (!mounted) return;
+                const next = resolvedTheme === "dark" ? "light" : "dark";
+                setTheme(next);
+                await fetch("/api/profile", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ theme: next }) });
+              }}
               className="w-11 h-11 flex items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground transition-colors"
               aria-label="Toggle theme"
             >

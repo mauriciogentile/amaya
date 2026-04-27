@@ -10,7 +10,7 @@ export async function GET() {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   await connectDB();
-  const user = await User.findById(session.user.id).select("firstName lastName email image weightKg heightCm unitSystem").lean();
+  const user = await User.findById(session.user.id).select("firstName lastName email image weightKg heightCm unitSystem theme").lean();
   return NextResponse.json(user);
 }
 
@@ -19,14 +19,14 @@ export async function PATCH(req: NextRequest) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { firstName, lastName, weightKg, heightCm, unitSystem } = body;
+  const { firstName, lastName, weightKg, heightCm, unitSystem, theme } = body;
 
   await connectDB();
   const user = await User.findByIdAndUpdate(
     session.user.id,
-    { firstName, lastName, weightKg, heightCm, unitSystem },
+    { firstName, lastName, weightKg, heightCm, unitSystem, theme },
     { new: true }
-  ).select("firstName lastName email image weightKg heightCm unitSystem");
+  ).select("firstName lastName email image weightKg heightCm unitSystem theme");
 
   return NextResponse.json(user);
 }
