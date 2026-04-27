@@ -67,23 +67,23 @@ export default function LibraryPage() {
   }, [hasMore, loading, q, bodyPart, page, fetchExercises]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
       <div className="px-4 pt-10 pb-0 max-w-lg mx-auto w-full">
-        <h1 className="text-2xl font-bold text-white mb-4">Exercise Library</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-4">Exercise Library</h1>
 
         {/* Search */}
         <div className="flex items-center gap-2 bg-white/10 rounded-xl px-3 py-2.5 mb-3">
-          <Search size={16} className="text-white/50 shrink-0" />
+          <Search size={16} className="text-foreground/50 shrink-0" />
           <input
             type="text"
             placeholder="Search 1,300+ exercises..."
             value={q}
             onChange={e => setQ(e.target.value)}
-            className="bg-transparent text-white placeholder-white/40 text-sm flex-1 outline-none"
+            className="bg-transparent text-foreground placeholder-white/40 text-sm flex-1 outline-none"
           />
           {q && (
-            <button onClick={() => setQ("")} className="text-white/40">
+            <button onClick={() => setQ("")} className="text-foreground/40">
               <X size={14} />
             </button>
           )}
@@ -97,8 +97,8 @@ export default function LibraryPage() {
               onClick={() => setBodyPart(bp)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                 bodyPart === bp
-                  ? "bg-orange-500 text-white"
-                  : "bg-white/10 text-white/60"
+                  ? "bg-orange-500 text-foreground"
+                  : "bg-white/10 text-foreground/60"
               }`}
             >
               {BODY_PART_EMOJI[bp]} {BODY_PART_LABELS[bp]}
@@ -113,10 +113,10 @@ export default function LibraryPage() {
           <button
             key={ex._id}
             onClick={() => router.push(`/library/${ex._id}`)}
-            className="w-full flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-left active:bg-zinc-800 transition-colors"
+            className="w-full flex items-center gap-3 bg-card border border-border rounded-xl p-3 text-left active:bg-muted transition-colors"
           >
             {/* Thumbnail */}
-            <div className="w-14 h-14 rounded-lg bg-zinc-800 overflow-hidden shrink-0">
+            <div className="w-14 h-14 rounded-lg bg-muted overflow-hidden shrink-0">
               {ex.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={ex.imageUrl} alt={ex.name} className="w-full h-full object-cover" loading="lazy" />
@@ -127,7 +127,7 @@ export default function LibraryPage() {
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-semibold truncate">{ex.name}</p>
+              <p className="text-foreground text-sm font-semibold truncate">{ex.name}</p>
               <div className="flex gap-1.5 mt-1 flex-wrap">
                 {ex.bodyPart && (
                   <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 font-medium uppercase">
@@ -135,14 +135,14 @@ export default function LibraryPage() {
                   </span>
                 )}
                 {ex.equipment && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-white/50 font-medium uppercase">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-foreground/50 font-medium uppercase">
                     {ex.equipment}
                   </span>
                 )}
               </div>
             </div>
 
-            <ChevronRight size={16} className="text-zinc-600 shrink-0" />
+            <ChevronRight size={16} className="text-muted-foreground shrink-0" />
           </button>
         ))}
 

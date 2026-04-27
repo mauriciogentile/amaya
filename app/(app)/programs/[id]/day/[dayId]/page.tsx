@@ -47,8 +47,8 @@ const muscleGroupColor: Record<string, string> = {
 };
 
 function getMuscleColor(mg?: string) {
-  if (!mg) return "bg-zinc-800 text-zinc-400";
-  return muscleGroupColor[mg] || "bg-zinc-800 text-zinc-400";
+  if (!mg) return "bg-muted text-muted-foreground";
+  return muscleGroupColor[mg] || "bg-muted text-muted-foreground";
 }
 
 function formatRest(seconds: number) {
@@ -67,18 +67,18 @@ function Stepper({
 }) {
   return (
     <div className="flex flex-col items-center gap-1">
-      <span className="text-xs text-zinc-500 uppercase tracking-widest">{label}</span>
+      <span className="text-xs text-muted-foreground uppercase tracking-widest">{label}</span>
       <div className="flex items-center gap-3">
         <button
           onClick={() => onChange(Math.max(min, value - 1))}
-          className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 hover:bg-zinc-700 active:scale-95 transition-all"
+          className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-all"
         >
           <Minus size={14} />
         </button>
-        <span className="text-xl font-bold text-white w-8 text-center">{value}</span>
+        <span className="text-xl font-bold text-foreground w-8 text-center">{value}</span>
         <button
           onClick={() => onChange(Math.min(max, value + 1))}
-          className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 hover:bg-zinc-700 active:scale-95 transition-all"
+          className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-foreground hover:bg-muted active:scale-95 transition-all"
         >
           <Plus size={14} />
         </button>
@@ -181,12 +181,12 @@ export default function DayDetailPage({
 
   if (loading) {
     return (
-      <div className="flex flex-col h-screen bg-zinc-950">
+      <div className="flex flex-col h-screen bg-background">
         <div className="px-4 pt-6 max-w-lg mx-auto w-full space-y-4 animate-pulse">
-          <div className="h-6 bg-zinc-800 rounded w-1/2" />
-          <div className="h-4 bg-zinc-800 rounded w-3/4" />
+          <div className="h-6 bg-muted rounded w-1/2" />
+          <div className="h-4 bg-muted rounded w-3/4" />
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 bg-zinc-900 border border-zinc-800 rounded-xl" />
+            <div key={i} className="h-20 bg-card border border-border rounded-xl" />
           ))}
         </div>
       </div>
@@ -195,7 +195,7 @@ export default function DayDetailPage({
 
   if (!day) {
     return (
-      <div className="px-4 pt-6 max-w-lg mx-auto text-center text-zinc-400">
+      <div className="px-4 pt-6 max-w-lg mx-auto text-center text-muted-foreground">
         Workout day not found.
       </div>
     );
@@ -204,32 +204,32 @@ export default function DayDetailPage({
   const sortedExercises = [...day.exercises].sort((a, b) => a.order - b.order);
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
       <div className="px-4 pt-6 pb-0 max-w-lg mx-auto w-full">
         <div className="flex items-center gap-3 mb-4">
           <button
             onClick={() => router.back()}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors shrink-0"
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-muted text-foreground hover:bg-muted transition-colors shrink-0"
           >
             <ArrowLeft size={18} />
           </button>
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-zinc-500 truncate">{program?.name}</p>
-            <h1 className="text-lg font-bold text-white leading-tight truncate">{day.name}</h1>
+            <p className="text-xs text-muted-foreground truncate">{program?.name}</p>
+            <h1 className="text-lg font-bold text-foreground leading-tight truncate">{day.name}</h1>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-zinc-800">
+        <div className="flex border-b border-border">
           {(["exercises", "overview", "notes"] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex-1 py-2 text-sm font-medium capitalize transition-colors ${
                 activeTab === tab
-                  ? "text-white border-b-2 border-orange-500"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "text-foreground border-b-2 border-orange-500"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {tab}
@@ -243,31 +243,31 @@ export default function DayDetailPage({
         {activeTab === "exercises" && (
           <div className="space-y-3">
             {sortedExercises.length === 0 ? (
-              <div className="flex flex-col items-center py-16 gap-3 text-zinc-500">
+              <div className="flex flex-col items-center py-16 gap-3 text-muted-foreground">
                 <Dumbbell size={32} />
                 <p className="text-sm">No exercises yet.</p>
-                <p className="text-xs text-zinc-600">Tap + Add Exercise to get started.</p>
+                <p className="text-xs text-muted-foreground">Tap + Add Exercise to get started.</p>
               </div>
             ) : (
               sortedExercises.map((ex) => (
                 <div
                   key={ex._id}
-                  className="rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 flex items-center gap-3"
+                  className="rounded-xl border border-border bg-card px-4 py-3 flex items-center gap-3"
                 >
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${getMuscleColor(ex.muscleGroup)}`}>
                     {ex.muscleGroup?.slice(0, 2).toUpperCase() ?? "💪"}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-white text-sm truncate">{ex.name}</p>
-                    <p className="text-zinc-500 text-xs mt-0.5">
+                    <p className="font-medium text-foreground text-sm truncate">{ex.name}</p>
+                    <p className="text-muted-foreground text-xs mt-0.5">
                       {ex.sets} sets · {ex.minReps}–{ex.maxReps} reps · {formatRest(ex.restSeconds)} rest
                     </p>
                   </div>
 
                   <button
                     onClick={() => openEdit(ex)}
-                    className="w-8 h-8 flex items-center justify-center text-zinc-600 hover:text-zinc-400 transition-colors shrink-0"
+                    className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-muted-foreground transition-colors shrink-0"
                   >
                     <MoreHorizontal size={18} />
                   </button>
@@ -288,29 +288,29 @@ export default function DayDetailPage({
         {activeTab === "overview" && (
           <div className="space-y-4">
             {day.description && (
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
-                <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-1">Description</p>
-                <p className="text-sm text-zinc-300">{day.description}</p>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-1">Description</p>
+                <p className="text-sm text-foreground">{day.description}</p>
               </div>
             )}
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 space-y-3">
-              <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">Summary</p>
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+              <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">Summary</p>
               <div className="flex gap-6">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-white">{sortedExercises.length}</p>
-                  <p className="text-xs text-zinc-500">Exercises</p>
+                  <p className="text-2xl font-bold text-foreground">{sortedExercises.length}</p>
+                  <p className="text-xs text-muted-foreground">Exercises</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-foreground">
                     {sortedExercises.reduce((sum, ex) => sum + ex.sets, 0)}
                   </p>
-                  <p className="text-xs text-zinc-500">Total Sets</p>
+                  <p className="text-xs text-muted-foreground">Total Sets</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-foreground">
                     ~{Math.round(sortedExercises.reduce((sum, ex) => sum + ex.sets * (ex.restSeconds + 45), 0) / 60)}
                   </p>
-                  <p className="text-xs text-zinc-500">Est. Min</p>
+                  <p className="text-xs text-muted-foreground">Est. Min</p>
                 </div>
               </div>
             </div>
@@ -322,9 +322,9 @@ export default function DayDetailPage({
             <textarea
               placeholder="Add notes for this workout day..."
               defaultValue={day.notes ?? ""}
-              className="w-full h-48 bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-white placeholder-zinc-600 resize-none focus:outline-none focus:border-zinc-600"
+              className="w-full h-48 bg-card border border-border rounded-xl p-4 text-sm text-foreground placeholder-muted-foreground resize-none focus:outline-none focus:border-border"
             />
-            <p className="text-xs text-zinc-600 text-center">Notes are saved locally for now.</p>
+            <p className="text-xs text-muted-foreground text-center">Notes are saved locally for now.</p>
           </div>
         )}
       </div>
@@ -332,16 +332,16 @@ export default function DayDetailPage({
       {/* Edit Exercise Sheet */}
       {editingEx && (
         <>
-          <div className="fixed inset-0 bg-black/60 z-40" onClick={closeEdit} />
-          <div className="fixed bottom-0 inset-x-0 z-50 bg-zinc-900 border-t border-zinc-800 rounded-t-2xl px-4 pt-4 pb-8 max-w-lg mx-auto">
+          <div className="fixed inset-0 bg-background/60 z-40" onClick={closeEdit} />
+          <div className="fixed bottom-0 inset-x-0 z-50 bg-card border-t border-border rounded-t-2xl px-4 pt-4 pb-8 max-w-lg mx-auto">
             <div className="flex items-center justify-between mb-5">
               <div className="min-w-0 flex-1">
-                <p className="text-xs text-zinc-500 uppercase tracking-widest">Editing</p>
-                <h2 className="text-base font-bold text-white truncate">{editingEx.name}</h2>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest">Editing</p>
+                <h2 className="text-base font-bold text-foreground truncate">{editingEx.name}</h2>
               </div>
               <button
                 onClick={closeEdit}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-400 hover:text-white ml-3 shrink-0"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground ml-3 shrink-0"
               >
                 <X size={16} />
               </button>
@@ -369,7 +369,7 @@ export default function DayDetailPage({
             </div>
 
             <div className="mb-6">
-              <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">Rest Time</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">Rest Time</p>
               <div className="flex gap-2 flex-wrap">
                 {REST_OPTIONS.map((s) => (
                   <button
@@ -377,8 +377,8 @@ export default function DayDetailPage({
                     onClick={() => setDraft((d) => ({ ...d, restSeconds: s }))}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                       (draft.restSeconds ?? editingEx.restSeconds) === s
-                        ? "bg-orange-500 text-white"
-                        : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+                        ? "bg-orange-500 text-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted"
                     }`}
                   >
                     {formatRest(s)}
@@ -390,7 +390,7 @@ export default function DayDetailPage({
             <button
               onClick={saveEdit}
               disabled={saving}
-              className="w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-400 disabled:opacity-50 text-white font-semibold flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-400 disabled:opacity-50 text-foreground font-semibold flex items-center justify-center gap-2 transition-colors"
             >
               {saving ? (
                 <span className="text-sm">Saving...</span>

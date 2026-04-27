@@ -22,12 +22,12 @@ interface Program {
 
 function ProgramCardSkeleton() {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 space-y-3 animate-pulse">
-      <div className="h-5 bg-zinc-800 rounded w-2/3" />
-      <div className="h-3 bg-zinc-800 rounded w-full" />
+    <div className="rounded-xl border border-border bg-card p-4 space-y-3 animate-pulse">
+      <div className="h-5 bg-muted rounded w-2/3" />
+      <div className="h-3 bg-muted rounded w-full" />
       <div className="flex gap-2">
-        <div className="h-5 bg-zinc-800 rounded w-20" />
-        <div className="h-5 bg-zinc-800 rounded w-16" />
+        <div className="h-5 bg-muted rounded w-20" />
+        <div className="h-5 bg-muted rounded w-16" />
       </div>
     </div>
   );
@@ -56,10 +56,10 @@ export default function ProgramsPage() {
     <div className="px-4 pt-6 pb-4 space-y-4 max-w-lg mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Plans</h1>
+        <h1 className="text-2xl font-bold text-foreground">Plans</h1>
         <button
           onClick={() => alert("Coming soon — program builder is in the works!")}
-          className="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-colors"
+          className="w-9 h-9 flex items-center justify-center rounded-full bg-muted text-foreground hover:bg-muted/80 transition-colors"
         >
           <Plus size={20} />
         </button>
@@ -74,10 +74,10 @@ export default function ProgramsPage() {
         </div>
       ) : programs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center space-y-3">
-          <div className="w-16 h-16 rounded-full bg-zinc-900 flex items-center justify-center">
-            <Dumbbell size={28} className="text-zinc-600" />
+          <div className="w-16 h-16 rounded-full bg-card flex items-center justify-center">
+            <Dumbbell size={28} className="text-muted-foreground" />
           </div>
-          <p className="text-zinc-400 text-sm">No programs yet.<br />Tap <strong className="text-white">+</strong> to create one.</p>
+          <p className="text-muted-foreground text-sm">No programs yet.<br />Tap <strong className="text-foreground">+</strong> to create one.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -85,12 +85,12 @@ export default function ProgramsPage() {
             <button
               key={program._id}
               onClick={() => router.push(`/programs/${program._id}`)}
-              className="w-full text-left rounded-xl border border-zinc-800 bg-zinc-900 p-4 flex items-start gap-3 hover:bg-zinc-800/60 transition-colors"
+              className="w-full text-left rounded-xl border border-border bg-card p-4 flex items-start gap-3 hover:bg-muted/50 transition-colors"
             >
               <div className="flex-1 space-y-2 min-w-0">
-                <p className="font-semibold text-white truncate">{program.name}</p>
+                <p className="font-semibold text-foreground truncate">{program.name}</p>
                 {program.description && (
-                  <p className="text-zinc-400 text-xs line-clamp-2">{program.description}</p>
+                  <p className="text-muted-foreground text-xs line-clamp-2">{program.description}</p>
                 )}
                 <div className="flex flex-wrap gap-2">
                   <Badge className="bg-orange-900 text-orange-300 border-orange-800 text-xs font-bold uppercase tracking-wide">
@@ -101,7 +101,7 @@ export default function ProgramsPage() {
                   </Badge>
                 </div>
               </div>
-              <ChevronRight size={18} className="text-zinc-600 mt-1 shrink-0" />
+              <ChevronRight size={18} className="text-muted-foreground mt-1 shrink-0" />
             </button>
           ))}
         </div>

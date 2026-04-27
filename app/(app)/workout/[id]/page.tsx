@@ -38,7 +38,7 @@ function RestTimer({ seconds, onDone }: { seconds: number; onDone: () => void })
   }, [left, onDone]);
   const pct = (left / seconds) * 100;
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onClick={onDone}>
+    <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-50" onClick={onDone}>
       <div className="text-center">
         <div className="relative w-32 h-32 mx-auto mb-4">
           <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
@@ -47,10 +47,10 @@ function RestTimer({ seconds, onDone }: { seconds: number; onDone: () => void })
               strokeDasharray={`${pct} 100`} strokeLinecap="round" />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-3xl font-bold text-white">{left}</span>
+            <span className="text-3xl font-bold text-foreground">{left}</span>
           </div>
         </div>
-        <p className="text-zinc-400 text-sm">Rest · tap to skip</p>
+        <p className="text-muted-foreground text-sm">Rest · tap to skip</p>
       </div>
     </div>
   );
@@ -159,21 +159,21 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
   const totalSets = exercises.reduce((a, ex) => a + ex.sets.length, 0);
 
   if (!workout) return (
-    <div className="flex items-center justify-center min-h-screen bg-zinc-950">
+    <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950 pb-36">
+    <div className="flex flex-col min-h-screen bg-background pb-36">
       {resting && <RestTimer seconds={resting.seconds} onDone={() => setResting(null)} />}
 
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur border-b border-zinc-800 px-4 py-3">
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div>
-            <p className="text-white font-bold truncate max-w-[200px]">{workout.name}</p>
-            <div className="flex items-center gap-3 text-xs text-zinc-500">
+            <p className="text-foreground font-bold truncate max-w-[200px]">{workout.name}</p>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1"><Clock size={11} />{fmt(elapsed)}</span>
               <span>{doneSets}/{totalSets} sets</span>
             </div>
@@ -189,37 +189,37 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 bg-zinc-800">
+      <div className="h-1 bg-muted">
         <div className="h-1 bg-emerald-500 transition-all" style={{ width: `${totalSets > 0 ? (doneSets / totalSets) * 100 : 0}%` }} />
       </div>
 
       {/* Exercises */}
       <div className="px-4 pt-4 max-w-lg mx-auto w-full space-y-4">
         {exercises.length === 0 && (
-          <p className="text-center text-zinc-600 py-20">No exercises. Finish to save.</p>
+          <p className="text-center text-muted-foreground py-20">No exercises. Finish to save.</p>
         )}
 
         {exercises.map((ex, ei) => {
           const isCollapsed = collapsed[ei];
           const exDone = ex.sets.every(s => s.done);
           return (
-            <div key={ei} className={`rounded-2xl border overflow-hidden transition-all ${exDone ? "border-emerald-800/50 bg-emerald-950/20" : "border-zinc-800 bg-zinc-900"}`}>
+            <div key={ei} className={`rounded-2xl border overflow-hidden transition-all ${exDone ? "border-emerald-800/50 bg-emerald-950/20" : "border-border bg-card"}`}>
               {/* Exercise header */}
               <button
                 className="w-full px-4 py-3 flex items-center gap-3 text-left"
                 onClick={() => setCollapsed(c => ({ ...c, [ei]: !c[ei] }))}
               >
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${exDone ? "bg-emerald-500" : "bg-zinc-700"}`}>
-                  {exDone ? <Check size={14} className="text-black" /> : <span className="text-xs text-zinc-300 font-bold">{ei + 1}</span>}
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${exDone ? "bg-emerald-500" : "bg-muted"}`}>
+                  {exDone ? <Check size={14} className="text-black" /> : <span className="text-xs text-foreground font-bold">{ei + 1}</span>}
                 </div>
-                <p className={`flex-1 font-semibold text-sm ${exDone ? "text-emerald-400" : "text-white"}`}>{ex.exerciseName}</p>
-                {isCollapsed ? <ChevronDown size={16} className="text-zinc-500" /> : <ChevronUp size={16} className="text-zinc-500" />}
+                <p className={`flex-1 font-semibold text-sm ${exDone ? "text-emerald-400" : "text-foreground"}`}>{ex.exerciseName}</p>
+                {isCollapsed ? <ChevronDown size={16} className="text-muted-foreground" /> : <ChevronUp size={16} className="text-muted-foreground" />}
               </button>
 
               {!isCollapsed && (
                 <div className="px-4 pb-4 space-y-2">
                   {/* Column headers */}
-                  <div className="grid grid-cols-[28px_80px_80px_32px] gap-2 text-xs text-zinc-600 mb-1">
+                  <div className="grid grid-cols-[28px_80px_80px_32px] gap-2 text-xs text-muted-foreground mb-1">
                     <span className="text-center">Set</span>
                     <span className="text-center">kg</span>
                     <span className="text-center">Reps</span>
@@ -228,14 +228,14 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
 
                   {ex.sets.map((set, si) => (
                     <div key={si} className={`grid grid-cols-[28px_80px_80px_32px] gap-2 items-center transition-opacity ${set.done ? "opacity-60" : ""}`}>
-                      <span className="text-xs text-zinc-500 text-center font-medium">{set.setNumber}</span>
+                      <span className="text-xs text-muted-foreground text-center font-medium">{set.setNumber}</span>
                       <input
                         type="number"
                         inputMode="decimal"
                         placeholder="0"
                         value={set.weightKg ?? ""}
                         onChange={e => updateSet(ei, si, "weightKg", e.target.value)}
-                        className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:border-emerald-500"
+                        className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground text-center focus:outline-none focus:border-emerald-500"
                       />
                       <input
                         type="number"
@@ -243,13 +243,13 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
                         placeholder="0"
                         value={set.reps ?? ""}
                         onChange={e => updateSet(ei, si, "reps", e.target.value)}
-                        className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white text-center focus:outline-none focus:border-emerald-500"
+                        className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground text-center focus:outline-none focus:border-emerald-500"
                       />
                       <button
                         onClick={() => completeSet(ei, si)}
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${set.done ? "bg-emerald-500" : "bg-zinc-700 hover:bg-zinc-600"}`}
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${set.done ? "bg-emerald-500" : "bg-muted hover:bg-muted"}`}
                       >
-                        <Check size={14} className={set.done ? "text-black" : "text-zinc-400"} />
+                        <Check size={14} className={set.done ? "text-black" : "text-muted-foreground"} />
                       </button>
                     </div>
                   ))}
@@ -257,14 +257,14 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
                   <div className="flex gap-2 pt-1">
                     <button
                       onClick={() => addSet(ei)}
-                      className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                     >
                       <Plus size={12} /> Add set
                     </button>
                     {ex.sets.length > 1 && (
                       <button
                         onClick={() => removeSet(ei, ex.sets.length - 1)}
-                        className="flex items-center gap-1 text-xs text-zinc-600 hover:text-red-400 transition-colors ml-3"
+                        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-red-400 transition-colors ml-3"
                       >
                         <Trash2 size={12} /> Remove last
                       </button>
@@ -278,7 +278,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
       </div>
 
       {/* Floating finish bar */}
-      <div className="fixed bottom-0 inset-x-0 p-4 bg-zinc-950/95 backdrop-blur border-t border-zinc-800 z-40">
+      <div className="fixed bottom-0 inset-x-0 p-4 bg-background/95 backdrop-blur border-t border-border z-40">
         <div className="max-w-lg mx-auto">
           <button
             onClick={finish}

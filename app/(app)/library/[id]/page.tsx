@@ -41,28 +41,28 @@ export default function ExerciseDetailPage({
 
   if (loading) {
     return (
-      <div className="flex flex-col h-screen bg-zinc-950 animate-pulse">
-        <div className="h-64 bg-zinc-900" />
+      <div className="flex flex-col h-screen bg-background animate-pulse">
+        <div className="h-64 bg-card" />
         <div className="px-4 pt-4 space-y-3">
-          <div className="h-6 bg-zinc-800 rounded w-2/3" />
-          <div className="h-4 bg-zinc-800 rounded w-1/3" />
-          <div className="h-4 bg-zinc-800 rounded w-full" />
+          <div className="h-6 bg-muted rounded w-2/3" />
+          <div className="h-4 bg-muted rounded w-1/3" />
+          <div className="h-4 bg-muted rounded w-full" />
         </div>
       </div>
     );
   }
 
   if (!exercise) {
-    return <div className="px-4 pt-10 text-zinc-400 text-center">Exercise not found.</div>;
+    return <div className="px-4 pt-10 text-muted-foreground text-center">Exercise not found.</div>;
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950">
+    <div className="flex flex-col min-h-screen bg-background">
       {/* GIF Hero */}
-      <div className="relative bg-zinc-900 overflow-hidden" style={{ minHeight: 260 }}>
+      <div className="relative bg-card overflow-hidden" style={{ minHeight: 260 }}>
         <button
           onClick={() => router.back()}
-          className="absolute top-10 left-4 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-black/50 text-white backdrop-blur"
+          className="absolute top-10 left-4 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur"
         >
           <ArrowLeft size={18} />
         </button>
@@ -84,7 +84,7 @@ export default function ExerciseDetailPage({
             />
           </>
         ) : (
-          <div className="w-full h-64 flex items-center justify-center text-zinc-700">
+          <div className="w-full h-64 flex items-center justify-center text-muted-foreground">
             <Dumbbell size={48} />
           </div>
         )}
@@ -94,7 +94,7 @@ export default function ExerciseDetailPage({
       <div className="px-4 pt-5 pb-28 max-w-lg mx-auto w-full space-y-5">
         {/* Title + tags */}
         <div>
-          <h1 className="text-xl font-bold text-white leading-tight">{exercise.name}</h1>
+          <h1 className="text-xl font-bold text-foreground leading-tight">{exercise.name}</h1>
           <div className="flex gap-2 flex-wrap mt-2">
             {exercise.bodyPart && (
               <span className="text-xs px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 font-semibold uppercase">
@@ -107,7 +107,7 @@ export default function ExerciseDetailPage({
               </span>
             )}
             {exercise.equipment && (
-              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400 font-semibold uppercase">
+              <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground font-semibold uppercase">
                 {exercise.equipment}
               </span>
             )}
@@ -116,11 +116,11 @@ export default function ExerciseDetailPage({
 
         {/* Secondary muscles */}
         {exercise.secondaryMuscles?.length > 0 && (
-          <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
-            <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-2">Secondary Muscles</p>
+          <div className="rounded-xl bg-card border border-border p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-2">Secondary Muscles</p>
             <div className="flex gap-2 flex-wrap">
               {exercise.secondaryMuscles.map(m => (
-                <span key={m} className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-300">
+                <span key={m} className="text-xs px-2 py-1 rounded-full bg-muted text-foreground">
                   {m}
                 </span>
               ))}
@@ -130,8 +130,8 @@ export default function ExerciseDetailPage({
 
         {/* Instructions */}
         {(exercise.instructionSteps?.length > 0 || exercise.instructions) && (
-          <div className="rounded-xl bg-zinc-900 border border-zinc-800 p-4">
-            <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-3">How to do it</p>
+          <div className="rounded-xl bg-card border border-border p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-3">How to do it</p>
             {exercise.instructionSteps?.length > 0 ? (
               <ol className="space-y-3">
                 {exercise.instructionSteps.map((step, i) => (
@@ -139,12 +139,12 @@ export default function ExerciseDetailPage({
                     <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-500/20 text-orange-400 text-xs font-bold flex items-center justify-center">
                       {i + 1}
                     </span>
-                    <p className="text-sm text-zinc-300 leading-relaxed">{step}</p>
+                    <p className="text-sm text-foreground leading-relaxed">{step}</p>
                   </li>
                 ))}
               </ol>
             ) : (
-              <p className="text-sm text-zinc-300 leading-relaxed">{exercise.instructions}</p>
+              <p className="text-sm text-foreground leading-relaxed">{exercise.instructions}</p>
             )}
           </div>
         )}

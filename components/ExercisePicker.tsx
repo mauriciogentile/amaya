@@ -88,7 +88,7 @@ export function ExercisePicker({ open, onClose, onSelect }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="absolute inset-0 bg-background/60" onClick={onClose} />
 
       {/* Sheet */}
       <div className="relative mt-auto bg-[#1a1a1a] rounded-t-2xl h-[92vh] flex flex-col overflow-hidden">
@@ -99,8 +99,8 @@ export function ExercisePicker({ open, onClose, onSelect }: Props) {
 
         {/* Header */}
         <div className="flex items-center justify-between px-4 pb-3">
-          <h2 className="text-lg font-bold text-white">Add Exercise</h2>
-          <button onClick={onClose} className="p-2 rounded-full bg-white/10 text-white">
+          <h2 className="text-lg font-bold text-foreground">Add Exercise</h2>
+          <button onClick={onClose} className="p-2 rounded-full bg-white/10 text-foreground">
             <X size={18} />
           </button>
         </div>
@@ -108,17 +108,17 @@ export function ExercisePicker({ open, onClose, onSelect }: Props) {
         {/* Search */}
         <div className="px-4 pb-3">
           <div className="flex items-center gap-2 bg-white/10 rounded-xl px-3 py-2.5">
-            <Search size={16} className="text-white/50 shrink-0" />
+            <Search size={16} className="text-foreground/50 shrink-0" />
             <input
               ref={inputRef}
               type="text"
               placeholder="Search exercises..."
               value={q}
               onChange={e => setQ(e.target.value)}
-              className="bg-transparent text-white placeholder-white/40 text-sm flex-1 outline-none"
+              className="bg-transparent text-foreground placeholder-white/40 text-sm flex-1 outline-none"
             />
             {q && (
-              <button onClick={() => setQ("")} className="text-white/40">
+              <button onClick={() => setQ("")} className="text-foreground/40">
                 <X size={14} />
               </button>
             )}
@@ -133,8 +133,8 @@ export function ExercisePicker({ open, onClose, onSelect }: Props) {
               onClick={() => setBodyPart(bp)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                 bodyPart === bp
-                  ? "bg-blue-500 text-white"
-                  : "bg-white/10 text-white/60"
+                  ? "bg-blue-500 text-foreground"
+                  : "bg-white/10 text-foreground/60"
               }`}
             >
               {BODY_PART_LABELS[bp]}
@@ -160,13 +160,13 @@ export function ExercisePicker({ open, onClose, onSelect }: Props) {
                     loading="lazy"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white/20 text-2xl">💪</div>
+                  <div className="w-full h-full flex items-center justify-center text-foreground/20 text-2xl">💪</div>
                 )}
               </div>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-semibold truncate">{ex.name}</p>
+                <p className="text-foreground text-sm font-semibold truncate">{ex.name}</p>
                 <div className="flex gap-1.5 mt-1 flex-wrap">
                   {ex.bodyPart && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-medium uppercase">
@@ -174,7 +174,7 @@ export function ExercisePicker({ open, onClose, onSelect }: Props) {
                     </span>
                   )}
                   {ex.equipment && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-white/50 font-medium uppercase">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10 text-foreground/50 font-medium uppercase">
                       {ex.equipment}
                     </span>
                   )}
@@ -190,7 +190,7 @@ export function ExercisePicker({ open, onClose, onSelect }: Props) {
                     : "bg-blue-500 active:scale-90"
                 }`}
               >
-                {added === ex._id ? <CheckCircle2 size={18} className="text-white" /> : <Plus size={18} className="text-white" />}
+                {added === ex._id ? <CheckCircle2 size={18} className="text-foreground" /> : <Plus size={18} className="text-foreground" />}
               </button>
             </div>
           ))}

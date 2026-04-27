@@ -85,16 +85,16 @@ export default function LogPage() {
   }
 
   if (loading) return (
-    <div className="flex items-center justify-center min-h-screen bg-zinc-950">
+    <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950 pb-28">
+    <div className="flex flex-col min-h-screen bg-background pb-28">
       <div className="px-4 pt-10 max-w-lg mx-auto w-full">
-        <h1 className="text-2xl font-bold text-white mb-1">Let's train</h1>
-        <p className="text-zinc-500 text-sm mb-6">Pick a plan or start fresh</p>
+        <h1 className="text-2xl font-bold text-foreground mb-1">Let's train</h1>
+        <p className="text-muted-foreground text-sm mb-6">Pick a plan or start fresh</p>
 
         {/* Active workout banner */}
         {activeWorkout && (
@@ -107,17 +107,17 @@ export default function LogPage() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-emerald-400 font-semibold text-sm">Workout in progress</p>
-              <p className="text-zinc-400 text-xs truncate">{activeWorkout.name}</p>
+              <p className="text-muted-foreground text-xs truncate">{activeWorkout.name}</p>
             </div>
-            <ChevronRight size={16} className="text-zinc-500" />
+            <ChevronRight size={16} className="text-muted-foreground" />
           </button>
         )}
 
         {/* Plan cards */}
         {programs.length === 0 ? (
           <div className="text-center py-16 space-y-3">
-            <Dumbbell size={40} className="mx-auto text-zinc-700" />
-            <p className="text-zinc-500">No plans yet. Create one in Plans.</p>
+            <Dumbbell size={40} className="mx-auto text-muted-foreground" />
+            <p className="text-muted-foreground">No plans yet. Create one in Plans.</p>
           </div>
         ) : (
           <div className="space-y-3 mb-4">
@@ -130,7 +130,7 @@ export default function LogPage() {
                 <div
                   key={prog._id}
                   className={`rounded-2xl border transition-all overflow-hidden ${
-                    isSel ? "border-emerald-500/50 bg-emerald-500/5" : "border-zinc-800 bg-zinc-900"
+                    isSel ? "border-emerald-500/50 bg-emerald-500/5" : "border-border bg-card"
                   }`}
                 >
                   {/* Program header */}
@@ -140,18 +140,18 @@ export default function LogPage() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-white truncate">{prog.name}</p>
+                        <p className="font-semibold text-foreground truncate">{prog.name}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-zinc-500">
+                          <span className="text-xs text-muted-foreground">
                             {locationIcon[prog.location || "gym"]} {prog.location || "gym"}
                           </span>
                           {prog.lastWorkoutAt && (
-                            <span className="text-xs text-zinc-600">· {timeAgo(prog.lastWorkoutAt)}</span>
+                            <span className="text-xs text-muted-foreground">· {timeAgo(prog.lastWorkoutAt)}</span>
                           )}
                         </div>
                       </div>
                       <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5 ${
-                        isSel ? "border-emerald-400 bg-emerald-400" : "border-zinc-700"
+                        isSel ? "border-emerald-400 bg-emerald-400" : "border-border"
                       }`} />
                     </div>
                   </button>
@@ -159,7 +159,7 @@ export default function LogPage() {
                   {/* Day selector — only shown when selected */}
                   {isSel && prog.days.length > 0 && (
                     <div className="px-4 pb-4 space-y-2">
-                      <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-2">Select day</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-2">Select day</p>
                       <div className="flex flex-col gap-2">
                         {prog.days.map((day, idx) => {
                           const issugg = idx === prog.suggestedDayIndex && !prog.lastWorkoutAt === false;
@@ -170,19 +170,19 @@ export default function LogPage() {
                               className={`flex items-center gap-3 p-3 rounded-xl text-left transition-all ${
                                 selDayIdx === idx
                                   ? "bg-emerald-500/20 border border-emerald-500/40"
-                                  : "bg-zinc-800/50 border border-transparent"
+                                  : "bg-muted/50 border border-transparent"
                               }`}
                             >
                               <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                                selDayIdx === idx ? "bg-emerald-500 text-black" : "bg-zinc-700 text-zinc-400"
+                                selDayIdx === idx ? "bg-emerald-500 text-black" : "bg-muted text-muted-foreground"
                               }`}>
                                 {idx + 1}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className={`text-sm font-medium ${selDayIdx === idx ? "text-white" : "text-zinc-400"}`}>
+                                <p className={`text-sm font-medium ${selDayIdx === idx ? "text-foreground" : "text-muted-foreground"}`}>
                                   {day.name}
                                 </p>
-                                <p className="text-xs text-zinc-600">
+                                <p className="text-xs text-muted-foreground">
                                   {day.exercises?.length || 0} exercises
                                 </p>
                               </div>
@@ -219,7 +219,7 @@ export default function LogPage() {
         <button
           onClick={startEmpty}
           disabled={starting}
-          className="w-full py-3.5 rounded-2xl border border-zinc-800 text-zinc-400 font-semibold flex items-center justify-center gap-2 hover:border-zinc-700 transition-colors"
+          className="w-full py-3.5 rounded-2xl border border-border text-muted-foreground font-semibold flex items-center justify-center gap-2 hover:border-border transition-colors"
         >
           <Plus size={16} />
           Start empty workout
