@@ -88,7 +88,7 @@ function NewPlanSheet({ open, onClose, onCreated }: {
   return (
     <>
       {open && <div className="fixed inset-0 z-40 bg-black/50" onClick={onClose} />}
-      <div className={`fixed inset-x-0 bottom-0 z-50 bg-background rounded-t-2xl p-6 pb-10 space-y-5 shadow-2xl border-t border-border transition-transform duration-300 ${open ? "translate-y-0" : "translate-y-full"}`}>
+      <div className={`fixed inset-x-0 bottom-0 z-50 bg-background rounded-t-2xl p-6 pb-28 space-y-5 shadow-2xl border-t border-border transition-transform duration-300 ${open ? "translate-y-0" : "translate-y-full"}`}>
         <div className="w-10 h-1 bg-muted rounded-full mx-auto" />
         <h2 className="text-lg font-bold text-foreground">New Plan</h2>
         <div className="space-y-1.5">
