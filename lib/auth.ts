@@ -34,6 +34,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user;
+      const isAuthPage = nextUrl.pathname === "/sign-in" || nextUrl.pathname === "/sign-up";
+      const isRootPage = nextUrl.pathname === "/";
+
+      if (isLoggedIn && (isAuthPage || isRootPage)) {
+        return Response.redirect(new URL("/dashboard", nextUrl));
+      }
+      if (!isLoggedIn && !isAuthPage && !isRootPage) {
+        return Response.redirect(new URL("/sign-in", nextUrl));
+      }
+      return true;
+    },
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         await connectDB();
