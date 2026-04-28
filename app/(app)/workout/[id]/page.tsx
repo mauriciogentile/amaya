@@ -165,7 +165,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-background pb-36">
+    <div className="flex flex-col min-h-screen bg-background pb-48">
       {resting && <RestTimer seconds={resting.seconds} onDone={() => setResting(null)} />}
 
       {/* Header */}
@@ -278,7 +278,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
       </div>
 
       {/* Floating finish bar */}
-      <div className="fixed bottom-0 inset-x-0 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-background/95 backdrop-blur border-t border-border z-40">
+      <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] inset-x-0 p-4 bg-background/95 backdrop-blur border-t border-border z-50">
         <div className="max-w-lg mx-auto">
           <button
             onClick={finish}
