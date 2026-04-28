@@ -45,7 +45,7 @@ function NewPlanSheet({ open, onClose, onCreated }: {
   onClose: () => void;
   onCreated: (id: string) => void;
 }) {
-  const [name, setName] = useState("");
+  const [name, setName] = useState("My gym plan");
   const [days, setDays] = useState(3);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -53,7 +53,7 @@ function NewPlanSheet({ open, onClose, onCreated }: {
 
   useEffect(() => {
     if (open) {
-      setName("");
+      setName("My gym plan");
       setDays(3);
       setError("");
       setTimeout(() => inputRef.current?.focus(), 320);
@@ -123,7 +123,7 @@ function NewPlanSheet({ open, onClose, onCreated }: {
         {error && <p className="text-red-400 text-sm">{error}</p>}
         <button
           onClick={handleCreate}
-          disabled={!name.trim() || loading}
+          disabled={loading}
           className="w-full h-12 rounded-xl bg-emerald-500 text-white font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
         >
           {loading ? "Creating…" : "Create Plan"}
