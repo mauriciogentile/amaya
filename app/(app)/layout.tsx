@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import User from "@/lib/models/User";
 import { ThemeInitializer } from "@/components/theme-initializer";
+import InstallPrompt from "@/components/install-prompt";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   let userTheme: "light" | "dark" = "light";
@@ -23,6 +24,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           {children}
         </main>
         <BottomNav />
+        <InstallPrompt />
       </div>
     </>
   );
