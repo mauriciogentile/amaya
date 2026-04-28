@@ -65,11 +65,52 @@ function NewPlanSheet({ open, onClose, onCreated }: {
     setLoading(true);
     setError("");
     try {
-      const daysArray = Array.from({ length: days }, (_, i) => ({
-        name: `Day ${i + 1}`,
-        order: i + 1,
-        exercises: [],
-      }));
+      const defaultDays3 = [
+        {
+          name: "Day 1", order: 1,
+          description: "Chest & Biceps",
+          exercises: [
+            { name: "Flat Barbell Bench Press", muscleGroup: "Chest", sets: 3, minReps: 8, maxReps: 12, restSeconds: 90, order: 0 },
+            { name: "Incline Dumbbell Press", muscleGroup: "Chest", sets: 3, minReps: 8, maxReps: 12, restSeconds: 90, order: 1 },
+            { name: "Cable Chest Flyes", muscleGroup: "Chest", sets: 3, minReps: 12, maxReps: 15, restSeconds: 60, order: 2 },
+            { name: "Standing Barbell Curls", muscleGroup: "Biceps", sets: 3, minReps: 8, maxReps: 12, restSeconds: 60, order: 3 },
+            { name: "Dumbbell Hammer Curls", muscleGroup: "Biceps", sets: 3, minReps: 10, maxReps: 15, restSeconds: 60, order: 4 },
+            { name: "Concentration Curls", muscleGroup: "Biceps", sets: 2, minReps: 12, maxReps: 15, restSeconds: 60, order: 5 },
+          ],
+        },
+        {
+          name: "Day 2", order: 2,
+          description: "Back & Triceps",
+          exercises: [
+            { name: "Lat Pulldowns", muscleGroup: "Back", sets: 3, minReps: 8, maxReps: 12, restSeconds: 90, order: 0 },
+            { name: "Seated Cable Rows", muscleGroup: "Back", sets: 3, minReps: 8, maxReps: 12, restSeconds: 90, order: 1 },
+            { name: "Single-Arm Dumbbell Rows", muscleGroup: "Back", sets: 3, minReps: 8, maxReps: 12, restSeconds: 90, order: 2 },
+            { name: "Tricep Rope Pushdowns", muscleGroup: "Triceps", sets: 3, minReps: 10, maxReps: 15, restSeconds: 60, order: 3 },
+            { name: "Overhead Dumbbell Extensions", muscleGroup: "Triceps", sets: 3, minReps: 10, maxReps: 12, restSeconds: 60, order: 4 },
+            { name: "Bench Dips", muscleGroup: "Triceps", sets: 2, minReps: 12, maxReps: 15, restSeconds: 60, order: 5 },
+          ],
+        },
+        {
+          name: "Day 3", order: 3,
+          description: "Legs & Shoulders",
+          exercises: [
+            { name: "Barbell Squats", muscleGroup: "Legs", sets: 3, minReps: 6, maxReps: 10, restSeconds: 120, order: 0 },
+            { name: "Leg Extensions", muscleGroup: "Legs", sets: 3, minReps: 12, maxReps: 15, restSeconds: 60, order: 1 },
+            { name: "Lying Leg Curls", muscleGroup: "Legs", sets: 3, minReps: 10, maxReps: 15, restSeconds: 60, order: 2 },
+            { name: "Dumbbell Shoulder Press", muscleGroup: "Shoulders", sets: 3, minReps: 8, maxReps: 12, restSeconds: 90, order: 3 },
+            { name: "Dumbbell Lateral Raises", muscleGroup: "Shoulders", sets: 3, minReps: 12, maxReps: 15, restSeconds: 60, order: 4 },
+            { name: "Face Pulls", muscleGroup: "Shoulders", sets: 2, minReps: 15, maxReps: 20, restSeconds: 60, order: 5 },
+          ],
+        },
+      ];
+
+      const daysArray = days === 3
+        ? defaultDays3
+        : Array.from({ length: days }, (_, i) => ({
+            name: `Day ${i + 1}`,
+            order: i + 1,
+            exercises: [],
+          }));
       const res = await fetch("/api/programs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
