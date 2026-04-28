@@ -53,7 +53,7 @@ export default function ProgramsPage() {
   }, []);
 
   return (
-    <div className="px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-4 space-y-4 max-w-lg mx-auto w-full">
+    <div className="px-4 pt-[calc(2.5rem+env(safe-area-inset-top))] pb-4 space-y-4 max-w-lg mx-auto w-full">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Plans</h1>

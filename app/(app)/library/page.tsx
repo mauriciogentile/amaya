@@ -69,7 +69,7 @@ export default function LibraryPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
-      <div className="px-4 pt-10 pb-0 max-w-lg mx-auto w-full">
+      <div className="px-4 pt-[calc(2.5rem+env(safe-area-inset-top))] pb-0 max-w-lg mx-auto w-full">
         <h1 className="text-2xl font-bold text-foreground mb-4">Exercise Library</h1>
 
         {/* Search */}
