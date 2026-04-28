@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { use } from "react";
-import { Check, ChevronDown, ChevronUp, Clock, X, Plus, Trash2 } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Clock, X, Plus, Trash2, Ban } from "lucide-react";
 
 interface WorkoutSet {
   setNumber: number;
@@ -65,6 +65,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
   const [resting, setResting] = useState<{ seconds: number } | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [finishing, setFinishing] = useState(false);
+  const [aborting, setAborting] = useState(false);
   const saveTimer = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
@@ -143,6 +144,13 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
     });
   }
 
+  async function abort() {
+    if (!confirm("Cancel this workout? It will be deleted.")) return;
+    setAborting(true);
+    await fetch(`/api/workouts/${id}`, { method: "DELETE" });
+    router.push("/dashboard");
+  }
+
   async function finish() {
     setFinishing(true);
     // Final save
@@ -178,13 +186,16 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
               <span>{doneSets}/{totalSets} sets</span>
             </div>
           </div>
-          <button
-            onClick={finish}
-            disabled={finishing}
-            className="bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-bold px-4 py-2 rounded-xl transition-colors min-h-[44px]"
-          >
-            {finishing ? "Saving…" : "Finish"}
-          </button>
+          {doneSets === 0 && (
+            <button
+              onClick={abort}
+              disabled={aborting}
+              className="flex items-center gap-1.5 bg-zinc-800 hover:bg-red-900/60 text-red-400 hover:text-red-300 text-sm font-semibold px-3 py-2 rounded-xl transition-colors min-h-[44px]"
+            >
+              <Ban size={15} />
+              {aborting ? "Cancelling…" : "Cancel"}
+            </button>
+          )}
         </div>
       </div>
 

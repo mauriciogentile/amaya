@@ -47,3 +47,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   return NextResponse.json(workout);
 }
+
+// DELETE /api/workouts/[id] — abort/cancel a workout
+export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { id } = await params;
+  await connectDB();
+  const result = await Workout.findOneAndDelete({ _id: id, userId: session.user.id });
+  if (!result) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json({ ok: true });
+}
