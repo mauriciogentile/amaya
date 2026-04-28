@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Plus, Dumbbell } from "lucide-react";
+import { MoreVertical, Trash2, Plus, Dumbbell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface ProgramDay {
@@ -178,7 +178,14 @@ export default function ProgramsPage() {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSheet, setShowSheet] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const router = useRouter();
+
+  async function deleteProgram(id: string) {
+    setOpenMenuId(null);
+    await fetch(`/api/programs/${id}`, { method: "DELETE" });
+    setPrograms(prev => prev.filter(p => p._id !== id));
+  }
 
   useEffect(() => {
     fetch("/api/programs")
@@ -218,12 +225,15 @@ export default function ProgramsPage() {
         ) : (
           <div className="space-y-3">
             {programs.map((program) => (
-              <button
+              <div
                 key={program._id}
-                onClick={() => router.push(`/programs/${program._id}`)}
-                className="w-full text-left rounded-xl border border-border bg-card p-4 flex items-start gap-3 hover:bg-muted/50 transition-colors min-h-[52px]"
+                className="relative w-full text-left rounded-xl border border-border bg-card p-4 flex items-start gap-3"
               >
-                <div className="flex-1 space-y-2 min-w-0">
+                {/* Clickable body */}
+                <div
+                  className="flex-1 space-y-2 min-w-0 cursor-pointer"
+                  onClick={() => { setOpenMenuId(null); router.push(`/programs/${program._id}`); }}
+                >
                   <p className="font-semibold text-foreground truncate">{program.name}</p>
                   {program.description && (
                     <p className="text-muted-foreground text-xs line-clamp-2">{program.description}</p>
@@ -237,8 +247,31 @@ export default function ProgramsPage() {
                     </Badge>
                   </div>
                 </div>
-                <ChevronRight size={18} className="text-muted-foreground mt-1 shrink-0" />
-              </button>
+
+                {/* Three-dot menu */}
+                <div className="relative shrink-0">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === program._id ? null : program._id); }}
+                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground"
+                  >
+                    <MoreVertical size={16} />
+                  </button>
+                  {openMenuId === program._id && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
+                      <div className="absolute right-0 top-9 z-20 bg-card border border-border rounded-xl shadow-lg overflow-hidden min-w-[140px]">
+                        <button
+                          onClick={() => deleteProgram(program._id)}
+                          className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-400 hover:bg-muted transition-colors"
+                        >
+                          <Trash2 size={14} />
+                          Delete plan
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         )}
