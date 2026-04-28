@@ -45,6 +45,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     { new: true }
   ).lean();
 
+  // Recompute strength snapshot when workout is finished
+  if (finish) {
+    const origin = req.headers.get("origin") || "http://localhost:3000";
+    fetch(`${origin}/api/strength`, {
+      method: "POST",
+      headers: { cookie: req.headers.get("cookie") ?? "" },
+    }).catch(() => {});
+  }
+
   return NextResponse.json(workout);
 }
 
