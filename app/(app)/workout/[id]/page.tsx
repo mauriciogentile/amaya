@@ -31,11 +31,13 @@ interface Workout {
 
 function RestTimer({ seconds, onDone }: { seconds: number; onDone: () => void }) {
   const [left, setLeft] = useState(seconds);
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
   useEffect(() => {
-    if (left <= 0) { onDone(); return; }
+    if (left <= 0) { onDoneRef.current(); return; }
     const t = setTimeout(() => setLeft(l => l - 1), 1000);
     return () => clearTimeout(t);
-  }, [left, onDone]);
+  }, [left]);
   const pct = (left / seconds) * 100;
   return (
     <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-50" onClick={onDone}>
