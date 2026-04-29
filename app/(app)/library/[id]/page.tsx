@@ -97,12 +97,12 @@ export default function ExerciseDetailPage({
           <h1 className="text-xl font-bold text-foreground leading-tight">{exercise.name}</h1>
           <div className="flex gap-2 flex-wrap mt-2">
             {exercise.bodyPart && (
-              <span className="text-xs px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 font-semibold uppercase">
+              <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold uppercase">
                 {exercise.bodyPart}
               </span>
             )}
             {exercise.target && (
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-400 font-semibold uppercase">
+              <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-300 font-semibold uppercase">
                 {exercise.target}
               </span>
             )}
@@ -136,7 +136,7 @@ export default function ExerciseDetailPage({
               <ol className="space-y-3">
                 {exercise.instructionSteps.map((step, i) => (
                   <li key={i} className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-500/20 text-orange-400 text-xs font-bold flex items-center justify-center">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center justify-center">
                       {i + 1}
                     </span>
                     <p className="text-sm text-foreground leading-relaxed">{step}</p>

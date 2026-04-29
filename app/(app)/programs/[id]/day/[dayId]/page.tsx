@@ -228,7 +228,7 @@ export default function DayDetailPage({
               onClick={() => setActiveTab(tab)}
               className={`flex-1 py-2 text-sm font-medium capitalize transition-colors ${
                 activeTab === tab
-                  ? "text-foreground border-b-2 border-orange-500"
+                  ? "text-foreground border-b-2 border-emerald-500"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -277,7 +277,7 @@ export default function DayDetailPage({
 
             <button
               onClick={() => setPickerOpen(true)}
-              className="w-full py-3 flex items-center justify-center gap-2 text-orange-400 text-sm font-medium hover:text-orange-300 transition-colors"
+              className="w-full py-3 flex items-center justify-center gap-2 text-emerald-400 text-sm font-medium hover:text-emerald-300 transition-colors"
             >
               <Plus size={16} />
               Add Exercise
@@ -377,7 +377,7 @@ export default function DayDetailPage({
                     onClick={() => setDraft((d) => ({ ...d, restSeconds: s }))}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                       (draft.restSeconds ?? editingEx.restSeconds) === s
-                        ? "bg-orange-500 text-foreground"
+                        ? "bg-emerald-500 text-black"
                         : "bg-muted text-muted-foreground hover:bg-muted"
                     }`}
                   >
@@ -390,7 +390,7 @@ export default function DayDetailPage({
             <button
               onClick={saveEdit}
               disabled={saving}
-              className="w-full py-3 rounded-xl bg-orange-500 hover:bg-orange-400 disabled:opacity-50 text-foreground font-semibold flex items-center justify-center gap-2 transition-colors min-h-[44px]"
+              className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-semibold flex items-center justify-center gap-2 transition-colors min-h-[44px]"
             >
               {saving ? (
                 <span className="text-sm">Saving...</span>

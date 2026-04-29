@@ -133,7 +133,7 @@ export function ExercisePicker({ open, onClose, onSelect }: Props) {
               onClick={() => setBodyPart(bp)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                 bodyPart === bp
-                  ? "bg-blue-500 text-foreground"
+                  ? "bg-emerald-500 text-black"
                   : "bg-white/10 text-foreground/60"
               }`}
             >
@@ -169,7 +169,7 @@ export function ExercisePicker({ open, onClose, onSelect }: Props) {
                 <p className="text-foreground text-sm font-semibold truncate">{ex.name}</p>
                 <div className="flex gap-1.5 mt-1 flex-wrap">
                   {ex.bodyPart && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-medium uppercase">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-medium uppercase">
                       {ex.bodyPart}
                     </span>
                   )}
@@ -186,8 +186,8 @@ export function ExercisePicker({ open, onClose, onSelect }: Props) {
                 onClick={() => handleSelect(ex)}
                 className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-all ${
                   added === ex._id
-                    ? "bg-green-500"
-                    : "bg-blue-500 active:scale-90"
+                    ? "bg-emerald-500"
+                    : "bg-emerald-500 active:scale-90"
                 }`}
               >
                 {added === ex._id ? <CheckCircle2 size={18} className="text-foreground" /> : <Plus size={18} className="text-foreground" />}

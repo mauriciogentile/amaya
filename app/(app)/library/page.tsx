@@ -92,7 +92,7 @@ export default function LibraryPage() {
               onClick={() => setBodyPart(bp)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                 bodyPart === bp
-                  ? "bg-orange-500 text-white"
+                  ? "bg-emerald-500 text-black"
                   : "bg-muted text-muted-foreground"
               }`}
             >
@@ -106,19 +106,19 @@ export default function LibraryPage() {
           <button
             onClick={() => setEquipment(eq => eq === "barbell" ? null : "barbell")}
             className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-              equipment === "barbell" ? "bg-orange-500 text-white" : "bg-muted text-muted-foreground"
+              equipment === "barbell" ? "bg-emerald-500 text-black" : "bg-muted text-muted-foreground"
             }`}
           >Barbell</button>
           <button
             onClick={() => setEquipment(eq => eq === "dumbbell" ? null : "dumbbell")}
             className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-              equipment === "dumbbell" ? "bg-orange-500 text-white" : "bg-muted text-muted-foreground"
+              equipment === "dumbbell" ? "bg-emerald-500 text-black" : "bg-muted text-muted-foreground"
             }`}
           >Dumbbell</button>
           <button
             onClick={() => setEquipment(eq => eq === "cable" ? null : "cable")}
             className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-              equipment === "cable" ? "bg-orange-500 text-white" : "bg-muted text-muted-foreground"
+              equipment === "cable" ? "bg-emerald-500 text-black" : "bg-muted text-muted-foreground"
             }`}
           >Cable</button>
         </div>
@@ -147,7 +147,7 @@ export default function LibraryPage() {
               <p className="text-foreground text-sm font-semibold truncate">{ex.name}</p>
               <div className="flex gap-1.5 mt-1 flex-wrap">
                 {ex.bodyPart && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 font-medium uppercase">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-medium uppercase">
                     {ex.bodyPart}
                   </span>
                 )}

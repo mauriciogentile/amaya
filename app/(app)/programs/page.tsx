@@ -152,7 +152,7 @@ function NewPlanSheet({ open, onClose, onCreated }: {
                 onClick={() => setDays(n)}
                 className={`flex-1 h-10 rounded-xl text-sm font-bold transition-colors ${
                   days === n
-                    ? "bg-emerald-500 text-white"
+                    ? "bg-emerald-500 text-black"
                     : "bg-muted text-muted-foreground hover:bg-muted/70"
                 }`}
               >
@@ -165,7 +165,7 @@ function NewPlanSheet({ open, onClose, onCreated }: {
         <button
           onClick={handleCreate}
           disabled={loading}
-          className="w-full h-12 rounded-xl bg-emerald-500 text-white font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+          className="w-full h-12 rounded-xl bg-emerald-500 text-black font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
         >
           {loading ? "Creating…" : "Create Plan"}
         </button>
@@ -239,7 +239,7 @@ export default function ProgramsPage() {
                     <p className="text-muted-foreground text-xs line-clamp-2">{program.description}</p>
                   )}
                   <div className="flex flex-wrap gap-2">
-                    <Badge className="bg-orange-900 text-orange-300 border-orange-800 text-xs font-bold uppercase tracking-wide">
+                    <Badge className="bg-emerald-900 text-emerald-400 border-emerald-800 text-xs font-bold uppercase tracking-wide">
                       {program.days.length} {program.days.length === 1 ? "DAY" : "DAYS"}
                     </Badge>
                     <Badge className={`text-xs font-bold uppercase tracking-wide border ${locationColor[program.location]}`}>

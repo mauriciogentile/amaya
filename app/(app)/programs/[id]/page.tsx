@@ -86,7 +86,7 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ id: st
       )}
 
       <div className="flex flex-wrap gap-2">
-        <Badge className="bg-orange-900 text-orange-300 border-orange-800 text-xs font-bold uppercase tracking-wide">
+        <Badge className="bg-emerald-900 text-emerald-400 border-emerald-800 text-xs font-bold uppercase tracking-wide">
           {program.days.length} {program.days.length === 1 ? "DAY" : "DAYS"}
         </Badge>
         <Badge className={`text-xs font-bold uppercase tracking-wide border ${locationColor[program.location]}`}>

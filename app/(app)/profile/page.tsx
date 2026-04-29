@@ -20,7 +20,7 @@ function Avatar({ name, image }: { name: string; image?: string }) {
   if (image) return <img src={image} alt={name} className="w-20 h-20 rounded-full object-cover" />;
   const initials = name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
   return (
-    <div className="w-20 h-20 rounded-full bg-orange-500 flex items-center justify-center text-2xl font-bold text-foreground">
+    <div className="w-20 h-20 rounded-full bg-emerald-500 flex items-center justify-center text-2xl font-bold text-black">
       {initials || "?"}
     </div>
   );
@@ -176,7 +176,7 @@ export default function ProfilePage() {
                   key={u}
                   onClick={() => setUnitSystem(u)}
                   className={`px-3 py-1.5 text-xs font-semibold transition-colors capitalize ${
-                    unitSystem === u ? "bg-orange-500 text-foreground" : "text-muted-foreground"
+                    unitSystem === u ? "bg-emerald-500 text-black" : "text-muted-foreground"
                   }`}
                 >
                   {u === "metric" ? "kg / cm" : "lbs / ft"}
@@ -221,7 +221,7 @@ export default function ProfilePage() {
           onClick={save}
           disabled={saving}
           className={`w-full py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all min-h-[44px] ${
-            saved ? "bg-green-500 text-foreground" : "bg-orange-500 hover:bg-orange-400 text-foreground"
+            saved ? "bg-emerald-500 text-black" : "bg-emerald-500 hover:bg-emerald-400 text-black"
           }`}
         >
           {saved ? <><Check size={16} /> Saved!</> : saving ? "Saving..." : "Save Changes"}
