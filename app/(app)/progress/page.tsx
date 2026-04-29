@@ -87,7 +87,6 @@ function MuscleCard({ muscle, score, bestExercise, estimated1RM, history }: {
     <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-xl">{MUSCLE_ICONS[muscle]}</span>
           <div>
             <p className="font-semibold text-foreground text-sm">{MUSCLE_LABELS[muscle]}</p>
             <p className="text-xs text-muted-foreground">{bestExercise} · {estimated1RM}kg 1RM est.</p>
@@ -184,7 +183,6 @@ export default function ProgressPage() {
         </div>
       ) : (
         <div className="bg-card border border-border rounded-2xl p-8 text-center space-y-2">
-          <p className="text-4xl">🏋️</p>
           <p className="text-foreground font-semibold">No score yet</p>
           <p className="text-muted-foreground text-sm">Complete a workout with Bench Press, Squat, Deadlift or OHP to get your first score.</p>
         </div>
