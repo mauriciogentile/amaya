@@ -39,6 +39,7 @@ export async function GET() {
       days: p.days.map((d: any) => ({
         _id: d._id.toString(),
         name: d.name,
+        description: d.description,
         exercises: d.exercises,
       })),
       suggestedDayIndex,

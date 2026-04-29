@@ -8,6 +8,7 @@ import WorkoutCalendar from "@/components/WorkoutCalendar";
 interface ProgramDay {
   _id: string;
   name: string;
+  description?: string;
   exercises: any[];
 }
 
@@ -186,6 +187,11 @@ export default function LogPage() {
                                 <p className="text-xs text-muted-foreground">
                                   {day.exercises?.length || 0} exercises
                                 </p>
+                                {day.description && (
+                                  <p className="text-xs text-muted-foreground mt-0.5">
+                                    {day.description}
+                                  </p>
+                                )}
                               </div>
                               {idx === prog.suggestedDayIndex && (
                                 <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full flex-shrink-0">
