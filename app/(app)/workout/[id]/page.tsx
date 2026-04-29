@@ -5,6 +5,18 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { use } from "react";
 import { Check, ChevronDown, ChevronUp, Clock, X, Plus, Trash2, Ban, ArrowLeft, Save } from "lucide-react";
 
+const KG_TO_LBS = 2.20462;
+function toDisplay(kg: number | null, imperial: boolean): string {
+  if (kg === null) return "";
+  return imperial ? String(Math.round(kg * KG_TO_LBS * 10) / 10) : String(kg);
+}
+function toKg(val: string, imperial: boolean): number | null {
+  if (val === "" || val === null) return null;
+  const n = parseFloat(val);
+  if (isNaN(n)) return null;
+  return imperial ? Math.round((n / KG_TO_LBS) * 100) / 100 : n;
+}
+
 interface WorkoutSet {
   setNumber: number;
   reps: number | null;
@@ -74,6 +86,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const saveTimer = useRef<NodeJS.Timeout | undefined>(undefined);
+  const [imperial, setImperial] = useState(false);
 
   // Edit mode: either ?mode=edit or workout is already complete
   const [editMode, setEditMode] = useState(false);
@@ -87,6 +100,12 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
       }
     });
   }, [id, searchParams]);
+
+  useEffect(() => {
+    fetch("/api/profile").then(r => r.json()).then(u => {
+      if (u.unitSystem === "imperial") setImperial(true);
+    }).catch(() => {});
+  }, []);
 
   // Elapsed timer — only for active workouts
   useEffect(() => {
@@ -117,7 +136,10 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
     setExercises(prev => {
       const next = prev.map((ex, ei) => ei !== exIdx ? ex : {
         ...ex,
-        sets: ex.sets.map((s, si) => si !== setIdx ? s : { ...s, [field]: value === "" ? null : Number(value) }),
+        sets: ex.sets.map((s, si) => si !== setIdx ? s : {
+          ...s,
+          [field]: field === "weightKg" ? toKg(value, imperial) : (value === "" ? null : Number(value)),
+        }),
       });
       save(next, editMode);
       return next;
@@ -171,10 +193,13 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
 
   async function finish() {
     setFinishing(true);
+    const doneExercises = exercises
+      .map(ex => ({ ...ex, sets: ex.sets.filter(s => s.done) }))
+      .filter(ex => ex.sets.length > 0);
     await fetch(`/api/workouts/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ exercises, finish: true }),
+      body: JSON.stringify({ exercises: doneExercises, finish: true }),
     });
     router.push(`/workout/${id}/summary`);
   }
@@ -182,10 +207,13 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
   async function saveAndBack() {
     setSaving(true);
     clearTimeout(saveTimer.current);
+    const doneExercises = exercises
+      .map(ex => ({ ...ex, sets: ex.sets.filter(s => s.done) }))
+      .filter(ex => ex.sets.length > 0);
     await fetch(`/api/workouts/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ exercises }),
+      body: JSON.stringify({ exercises: doneExercises }),
     });
     setSaved(true);
     setTimeout(() => router.push("/dashboard"), 600);
@@ -280,7 +308,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
                   {/* Column headers */}
                   <div className="grid grid-cols-[28px_80px_80px_32px] gap-2 text-xs text-muted-foreground mb-1">
                     <span className="text-center">Set</span>
-                    <span className="text-center">kg</span>
+                    <span className="text-center">{imperial ? "lbs" : "kg"}</span>
                     <span className="text-center">Reps</span>
                     <span />
                   </div>
@@ -292,7 +320,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
                         type="number"
                         inputMode="decimal"
                         placeholder="0"
-                        value={set.weightKg ?? ""}
+                        value={toDisplay(set.weightKg, imperial)}
                         onChange={e => updateSet(ei, si, "weightKg", e.target.value)}
                         className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground text-center focus:outline-none focus:border-emerald-500"
                       />
