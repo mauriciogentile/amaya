@@ -80,7 +80,7 @@ export default function LibraryPage() {
             placeholder="Search 1,300+ exercises..."
             value={q}
             onChange={e => setQ(e.target.value)}
-            className="bg-transparent text-foreground placeholder-white/40 text-sm flex-1 outline-none"
+            className="bg-transparent text-foreground placeholder:text-muted-foreground text-sm flex-1 outline-none"
           />
           {q && (
             <button onClick={() => setQ("")} className="text-foreground/40">
