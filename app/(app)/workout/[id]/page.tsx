@@ -39,6 +39,8 @@ function RestTimer({ seconds, onDone }: { seconds: number; onDone: () => void })
     return () => clearTimeout(t);
   }, [left]);
   const pct = (left / seconds) * 100;
+  const mm = String(Math.floor(left / 60)).padStart(2, "0");
+  const ss = String(left % 60).padStart(2, "0");
   return (
     <div className="fixed inset-0 bg-background/80 flex items-center justify-center z-50" onClick={onDone}>
       <div className="text-center">
@@ -49,7 +51,7 @@ function RestTimer({ seconds, onDone }: { seconds: number; onDone: () => void })
               strokeDasharray={`${pct} 100`} strokeLinecap="round" />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-3xl font-bold text-foreground">{left}</span>
+            <span className="text-3xl font-bold text-foreground tabular-nums">{mm}:{ss}</span>
           </div>
         </div>
         <p className="text-muted-foreground text-sm">Rest · tap to skip</p>
@@ -111,6 +113,10 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
   }
 
   function completeSet(exIdx: number, setIdx: number) {
+    const ex = exercises[exIdx];
+    const set = ex.sets[setIdx];
+    // Validate: reps must be > 0 to mark as done
+    if (!set.done && (set.reps === null || set.reps <= 0)) return;
     setExercises(prev => {
       const next = prev.map((ex, ei) => ei !== exIdx ? ex : {
         ...ex,
@@ -119,11 +125,8 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
       save(next);
       return next;
     });
-    const ex = exercises[exIdx];
-    const set = ex.sets[setIdx];
     if (!set.done) setResting({ seconds: ex.restSeconds || 90 });
   }
-
   function addSet(exIdx: number) {
     setExercises(prev => {
       const next = prev.map((ex, ei) => ei !== exIdx ? ex : {
@@ -260,7 +263,8 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
                       />
                       <button
                         onClick={() => completeSet(ei, si)}
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${set.done ? "bg-emerald-500" : "bg-muted hover:bg-muted"}`}
+                        disabled={!set.done && (set.reps === null || set.reps <= 0)}
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${set.done ? "bg-emerald-500" : "bg-muted hover:bg-muted"} disabled:opacity-30`}
                       >
                         <Check size={14} className={set.done ? "text-black" : "text-muted-foreground"} />
                       </button>
