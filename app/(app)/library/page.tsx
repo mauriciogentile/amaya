@@ -24,7 +24,7 @@ const BODY_PART_LABELS: Record<string, string> = {
 
 export default function LibraryPage() {
   const [q, setQ] = useState("");
-  const [bodyPart, setBodyPart] = useState<string | null>(null);
+  const [bodyPart, setBodyPart] = useState<string | null>("chest");
   const [equipment, setEquipment] = useState<string | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [page, setPage] = useState(1);
