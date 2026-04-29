@@ -25,6 +25,7 @@ const BODY_PART_LABELS: Record<string, string> = {
 export default function LibraryPage() {
   const [q, setQ] = useState("");
   const [bodyPart, setBodyPart] = useState<string | null>(null);
+  const [equipment, setEquipment] = useState<string | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -32,9 +33,9 @@ export default function LibraryPage() {
   const loaderRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const fetchExercises = useCallback(async (query: string, bp: string | null, pg: number, append = false) => {
+  const fetchExercises = useCallback(async (query: string, bp: string | null, eq: string | null, pg: number, append = false) => {
     setLoading(true);
-    const params = new URLSearchParams({ q: query, bodyPart: bp ?? "", page: String(pg) });
+    const params = new URLSearchParams({ q: query, bodyPart: bp ?? "", equipment: eq ?? "", page: String(pg) });
     const res = await fetch(`/api/exercises?${params}`);
     const data = await res.json();
     setExercises(prev => append ? [...prev, ...data.exercises] : data.exercises);
@@ -44,21 +45,21 @@ export default function LibraryPage() {
   }, []);
 
   useEffect(() => {
-    fetchExercises(q, bodyPart, 1, false);
+    fetchExercises(q, bodyPart, equipment, 1, false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, bodyPart]);
+  }, [q, bodyPart, equipment]);
 
   useEffect(() => {
     const el = loaderRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore && !loading) {
-        fetchExercises(q, bodyPart, page + 1, true);
+        fetchExercises(q, bodyPart, equipment, page + 1, true);
       }
     }, { threshold: 0.5 });
     obs.observe(el);
     return () => obs.disconnect();
-  }, [hasMore, loading, q, bodyPart, page, fetchExercises]);
+  }, [hasMore, loading, q, bodyPart, equipment, page, fetchExercises]);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -66,21 +67,37 @@ export default function LibraryPage() {
       <div className="px-4 pt-[calc(2.5rem+env(safe-area-inset-top))] pb-0 max-w-lg mx-auto w-full">
         <h1 className="text-2xl font-bold text-foreground mb-4">Exercise Library</h1>
 
-        {/* Search */}
-        <div className="flex items-center gap-2 bg-white/10 rounded-xl px-3 py-2.5 mb-3">
-          <Search size={16} className="text-foreground/50 shrink-0" />
-          <input
-            type="text"
-            placeholder="Search 1,300+ exercises..."
-            value={q}
-            onChange={e => setQ(e.target.value)}
-            className="bg-transparent text-foreground placeholder:text-muted-foreground text-sm flex-1 outline-none"
-          />
-          {q && (
-            <button onClick={() => setQ("")} className="text-foreground/40">
-              <X size={14} />
-            </button>
-          )}
+        {/* Search + Equipment toggles */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 bg-muted rounded-xl px-3 py-2.5 flex-1">
+            <Search size={16} className="text-foreground/50 shrink-0" />
+            <input
+              type="text"
+              placeholder="Search 1,300+ exercises..."
+              value={q}
+              onChange={e => setQ(e.target.value)}
+              className="bg-transparent text-foreground placeholder:text-muted-foreground text-sm flex-1 outline-none"
+            />
+            {q && (
+              <button onClick={() => setQ("")} className="text-foreground/40">
+                <X size={14} />
+              </button>
+            )}
+          </div>
+          <button
+            onClick={() => setEquipment(eq => eq === "barbell" ? null : "barbell")}
+            title="Barbell"
+            className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-colors ${
+              equipment === "barbell" ? "bg-orange-500" : "bg-muted"
+            }`}
+          >🏋️</button>
+          <button
+            onClick={() => setEquipment(eq => eq === "dumbbell" ? null : "dumbbell")}
+            title="Dumbbell"
+            className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-colors ${
+              equipment === "dumbbell" ? "bg-orange-500" : "bg-muted"
+            }`}
+          >🔩</button>
         </div>
 
         {/* Body Part Filter */}
