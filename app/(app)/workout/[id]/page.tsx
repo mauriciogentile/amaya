@@ -120,10 +120,14 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
   // Save helper — debounced for live mode, immediate for edit mode
   const save = useCallback((exs: WorkoutExercise[], immediate = false) => {
     clearTimeout(saveTimer.current);
+    // Always persist only completed sets — undone sets are transient UI state
+    const persisted = exs
+      .map(ex => ({ ...ex, sets: ex.sets.filter(s => s.done) }))
+      .filter(ex => ex.sets.length > 0);
     const doSave = () => fetch(`/api/workouts/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ exercises: exs }),
+      body: JSON.stringify({ exercises: persisted }),
     });
     if (immediate) {
       doSave();
