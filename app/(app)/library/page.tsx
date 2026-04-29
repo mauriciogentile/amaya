@@ -14,23 +14,17 @@ interface Exercise {
   imageUrl: string;
 }
 
-const BODY_PARTS = ["", "back", "cardio", "chest", "lower arms", "lower legs", "neck", "shoulders", "upper arms", "upper legs", "waist"];
+const BODY_PARTS = ["chest", "back", "upper legs", "shoulders", "waist", "upper arms", "lower arms", "neck", "cardio"];
 const BODY_PART_LABELS: Record<string, string> = {
-  "": "All",
   back: "Back", cardio: "Cardio", chest: "Chest",
-  "lower arms": "Forearms", "lower legs": "Calves",
+  "lower arms": "Forearms",
   neck: "Neck", shoulders: "Shoulders",
   "upper arms": "Arms", "upper legs": "Legs", waist: "Core",
-};
-const BODY_PART_EMOJI: Record<string, string> = {
-  "": "🏋️", back: "🔙", cardio: "🏃", chest: "💪",
-  "lower arms": "🤜", "lower legs": "🦵", neck: "🦒",
-  shoulders: "🤷", "upper arms": "💪", "upper legs": "🦵", waist: "⚡",
 };
 
 export default function LibraryPage() {
   const [q, setQ] = useState("");
-  const [bodyPart, setBodyPart] = useState("");
+  const [bodyPart, setBodyPart] = useState<string | null>(null);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -38,9 +32,9 @@ export default function LibraryPage() {
   const loaderRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const fetchExercises = useCallback(async (query: string, bp: string, pg: number, append = false) => {
+  const fetchExercises = useCallback(async (query: string, bp: string | null, pg: number, append = false) => {
     setLoading(true);
-    const params = new URLSearchParams({ q: query, bodyPart: bp, page: String(pg) });
+    const params = new URLSearchParams({ q: query, bodyPart: bp ?? "", page: String(pg) });
     const res = await fetch(`/api/exercises?${params}`);
     const data = await res.json();
     setExercises(prev => append ? [...prev, ...data.exercises] : data.exercises);
@@ -97,11 +91,11 @@ export default function LibraryPage() {
               onClick={() => setBodyPart(bp)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
                 bodyPart === bp
-                  ? "bg-orange-500 text-foreground"
-                  : "bg-white/10 text-foreground/60"
+                  ? "bg-orange-500 text-white"
+                  : "bg-muted text-muted-foreground"
               }`}
             >
-              {BODY_PART_EMOJI[bp]} {BODY_PART_LABELS[bp]}
+              {BODY_PART_LABELS[bp]}
             </button>
           ))}
         </div>
