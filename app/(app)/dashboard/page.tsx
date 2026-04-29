@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dumbbell, ChevronRight, Clock, MapPin, Zap, Plus } from "lucide-react";
+import WorkoutCalendar from "@/components/WorkoutCalendar";
 
 interface ProgramDay {
   _id: string;
@@ -225,6 +226,8 @@ export default function LogPage() {
           <Plus size={16} />
           Start empty workout
         </button>
+
+        <WorkoutCalendar />
       </div>
     </div>
   );
