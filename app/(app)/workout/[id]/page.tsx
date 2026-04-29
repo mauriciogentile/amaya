@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { use } from "react";
-import { Check, ChevronDown, ChevronUp, Clock, X, Plus, Trash2, Ban } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Clock, X, Plus, Trash2, Ban, ArrowLeft, Save } from "lucide-react";
 
 interface WorkoutSet {
   setNumber: number;
@@ -63,6 +63,7 @@ function RestTimer({ seconds, onDone }: { seconds: number; onDone: () => void })
 export default function WorkoutPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [exercises, setExercises] = useState<WorkoutExercise[]>([]);
   const [collapsed, setCollapsed] = useState<Record<number, boolean>>({});
@@ -70,35 +71,46 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
   const [elapsed, setElapsed] = useState(0);
   const [finishing, setFinishing] = useState(false);
   const [aborting, setAborting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const saveTimer = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  // Edit mode: either ?mode=edit or workout is already complete
+  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     fetch(`/api/workouts/${id}`).then(r => r.json()).then(w => {
       setWorkout(w);
       setExercises(w.exercises || []);
+      if (w.isComplete || searchParams.get("mode") === "edit") {
+        setEditMode(true);
+      }
     });
-  }, [id]);
+  }, [id, searchParams]);
 
-  // Elapsed timer
+  // Elapsed timer — only for active workouts
   useEffect(() => {
-    if (!workout) return;
+    if (!workout || editMode) return;
     const start = new Date(workout.startedAt).getTime();
     const tick = () => setElapsed(Math.floor((Date.now() - start) / 1000));
     tick();
     const t = setInterval(tick, 1000);
     return () => clearInterval(t);
-  }, [workout]);
+  }, [workout, editMode]);
 
-  // Auto-save exercises every 10s
-  const save = useCallback((exs: WorkoutExercise[]) => {
+  // Save helper — debounced for live mode, immediate for edit mode
+  const save = useCallback((exs: WorkoutExercise[], immediate = false) => {
     clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      fetch(`/api/workouts/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ exercises: exs }),
-      });
-    }, 10000);
+    const doSave = () => fetch(`/api/workouts/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ exercises: exs }),
+    });
+    if (immediate) {
+      doSave();
+    } else {
+      saveTimer.current = setTimeout(doSave, 10000);
+    }
   }, [id]);
 
   function updateSet(exIdx: number, setIdx: number, field: "reps" | "weightKg", value: string) {
@@ -107,7 +119,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
         ...ex,
         sets: ex.sets.map((s, si) => si !== setIdx ? s : { ...s, [field]: value === "" ? null : Number(value) }),
       });
-      save(next);
+      save(next, editMode);
       return next;
     });
   }
@@ -115,25 +127,26 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
   function completeSet(exIdx: number, setIdx: number) {
     const ex = exercises[exIdx];
     const set = ex.sets[setIdx];
-    // Validate: reps must be > 0 to mark as done
     if (!set.done && (set.reps === null || set.reps <= 0)) return;
     setExercises(prev => {
       const next = prev.map((ex, ei) => ei !== exIdx ? ex : {
         ...ex,
         sets: ex.sets.map((s, si) => si !== setIdx ? s : { ...s, done: !s.done }),
       });
-      save(next);
+      save(next, editMode);
       return next;
     });
-    if (!set.done) setResting({ seconds: ex.restSeconds || 90 });
+    // No rest timer in edit mode
+    if (!set.done && !editMode) setResting({ seconds: ex.restSeconds || 90 });
   }
+
   function addSet(exIdx: number) {
     setExercises(prev => {
       const next = prev.map((ex, ei) => ei !== exIdx ? ex : {
         ...ex,
         sets: [...ex.sets, { setNumber: ex.sets.length + 1, reps: null, weightKg: null, type: "normal" }],
       });
-      save(next);
+      save(next, editMode);
       return next;
     });
   }
@@ -144,7 +157,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
         ...ex,
         sets: ex.sets.filter((_, si) => si !== setIdx).map((s, si) => ({ ...s, setNumber: si + 1 })),
       });
-      save(next);
+      save(next, editMode);
       return next;
     });
   }
@@ -158,13 +171,24 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
 
   async function finish() {
     setFinishing(true);
-    // Final save
     await fetch(`/api/workouts/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ exercises, finish: true }),
     });
     router.push(`/workout/${id}/summary`);
+  }
+
+  async function saveAndBack() {
+    setSaving(true);
+    clearTimeout(saveTimer.current);
+    await fetch(`/api/workouts/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ exercises }),
+    });
+    setSaved(true);
+    setTimeout(() => router.push("/dashboard"), 600);
   }
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
@@ -179,19 +203,36 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
 
   return (
     <div className="flex flex-col min-h-screen bg-background pb-48">
-      {resting && <RestTimer seconds={resting.seconds} onDone={() => setResting(null)} />}
+      {resting && !editMode && <RestTimer seconds={resting.seconds} onDone={() => setResting(null)} />}
 
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))]">
         <div className="max-w-lg mx-auto flex items-center justify-between">
-          <div>
-            <p className="text-foreground font-bold truncate max-w-[200px]">{workout.name}</p>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><Clock size={11} />{fmt(elapsed)}</span>
-              <span>{doneSets}/{totalSets} sets</span>
+          <div className="flex items-center gap-3">
+            {editMode && (
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted transition-colors"
+              >
+                <ArrowLeft size={18} className="text-muted-foreground" />
+              </button>
+            )}
+            <div>
+              <p className="text-foreground font-bold truncate max-w-[200px]">{workout.name}</p>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                {editMode ? (
+                  <span className="text-emerald-400 font-medium">Editing</span>
+                ) : (
+                  <>
+                    <span className="flex items-center gap-1"><Clock size={11} />{fmt(elapsed)}</span>
+                    <span>{doneSets}/{totalSets} sets</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-          {doneSets === 0 && (
+
+          {!editMode && doneSets === 0 && (
             <button
               onClick={abort}
               disabled={aborting}
@@ -204,10 +245,12 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div className="h-1 bg-muted">
-        <div className="h-1 bg-emerald-500 transition-all" style={{ width: `${totalSets > 0 ? (doneSets / totalSets) * 100 : 0}%` }} />
-      </div>
+      {/* Progress bar — only in active mode */}
+      {!editMode && (
+        <div className="h-1 bg-muted">
+          <div className="h-1 bg-emerald-500 transition-all" style={{ width: `${totalSets > 0 ? (doneSets / totalSets) * 100 : 0}%` }} />
+        </div>
+      )}
 
       {/* Exercises */}
       <div className="px-4 pt-4 max-w-lg mx-auto w-full space-y-4">
@@ -294,16 +337,27 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
         })}
       </div>
 
-      {/* Floating finish bar */}
+      {/* Floating action bar */}
       <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] inset-x-0 p-4 bg-background/95 backdrop-blur border-t border-border z-50">
         <div className="max-w-lg mx-auto">
-          <button
-            onClick={finish}
-            disabled={finishing}
-            className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-2xl transition-colors text-lg"
-          >
-            {finishing ? "Saving…" : "Finish Workout"}
-          </button>
+          {editMode ? (
+            <button
+              onClick={saveAndBack}
+              disabled={saving}
+              className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-2xl transition-colors text-lg flex items-center justify-center gap-2"
+            >
+              <Save size={18} />
+              {saved ? "Saved!" : saving ? "Saving…" : "Save Changes"}
+            </button>
+          ) : (
+            <button
+              onClick={finish}
+              disabled={finishing}
+              className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-2xl transition-colors text-lg"
+            >
+              {finishing ? "Saving…" : "Finish Workout"}
+            </button>
+          )}
         </div>
       </div>
     </div>
