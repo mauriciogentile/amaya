@@ -67,41 +67,25 @@ export default function LibraryPage() {
       <div className="px-4 pt-[calc(2.5rem+env(safe-area-inset-top))] pb-0 max-w-lg mx-auto w-full">
         <h1 className="text-2xl font-bold text-foreground mb-4">Exercise Library</h1>
 
-        {/* Search + Equipment toggles */}
-        <div className="flex items-center gap-2 mb-3">
-          <div className="flex items-center gap-2 bg-muted rounded-xl px-3 py-2.5 flex-1">
-            <Search size={16} className="text-foreground/50 shrink-0" />
-            <input
-              type="text"
-              placeholder="Search 1,300+ exercises..."
-              value={q}
-              onChange={e => setQ(e.target.value)}
-              className="bg-transparent text-foreground placeholder:text-muted-foreground text-sm flex-1 outline-none"
-            />
-            {q && (
-              <button onClick={() => setQ("")} className="text-foreground/40">
-                <X size={14} />
-              </button>
-            )}
-          </div>
-          <button
-            onClick={() => setEquipment(eq => eq === "barbell" ? null : "barbell")}
-            title="Barbell"
-            className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-colors ${
-              equipment === "barbell" ? "bg-orange-500" : "bg-muted"
-            }`}
-          >🏋️</button>
-          <button
-            onClick={() => setEquipment(eq => eq === "dumbbell" ? null : "dumbbell")}
-            title="Dumbbell"
-            className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-colors ${
-              equipment === "dumbbell" ? "bg-orange-500" : "bg-muted"
-            }`}
-          >🔩</button>
+        {/* Search */}
+        <div className="flex items-center gap-2 bg-muted rounded-xl px-3 py-2.5 mb-3">
+          <Search size={16} className="text-foreground/50 shrink-0" />
+          <input
+            type="text"
+            placeholder="Search 1,300+ exercises..."
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            className="bg-transparent text-foreground placeholder:text-muted-foreground text-sm flex-1 outline-none"
+          />
+          {q && (
+            <button onClick={() => setQ("")} className="text-foreground/40">
+              <X size={14} />
+            </button>
+          )}
         </div>
 
         {/* Body Part Filter */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-3">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
           {BODY_PARTS.map(bp => (
             <button
               key={bp}
@@ -115,6 +99,22 @@ export default function LibraryPage() {
               {BODY_PART_LABELS[bp]}
             </button>
           ))}
+        </div>
+
+        {/* Equipment Filter */}
+        <div className="flex gap-2 pb-3">
+          <button
+            onClick={() => setEquipment(eq => eq === "barbell" ? null : "barbell")}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+              equipment === "barbell" ? "bg-orange-500 text-white" : "bg-muted text-muted-foreground"
+            }`}
+          >Barbell</button>
+          <button
+            onClick={() => setEquipment(eq => eq === "dumbbell" ? null : "dumbbell")}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+              equipment === "dumbbell" ? "bg-orange-500 text-white" : "bg-muted text-muted-foreground"
+            }`}
+          >Dumbbell</button>
         </div>
       </div>
 
