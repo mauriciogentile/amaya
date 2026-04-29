@@ -73,14 +73,17 @@ function ScoreRing({ score, tier }: { score: number; tier: string }) {
   );
 }
 
-function MuscleCard({ muscle, score, bestExercise, estimated1RM, history }: {
+function MuscleCard({ muscle, score, bestExercise, estimated1RM, history, unitSystem }: {
   muscle: string;
   score: number;
   bestExercise: string;
   estimated1RM: number;
   history: { week: string; score: number }[];
+  unitSystem: "metric" | "imperial";
 }) {
   const color = MUSCLE_COLORS[muscle] ?? "#34d399";
+  const display1RM = unitSystem === "imperial" ? Math.round(estimated1RM * 2.205) : estimated1RM;
+  const unit = unitSystem === "imperial" ? "lbs" : "kg";
   const tier = getTier(score);
 
   return (
@@ -89,7 +92,7 @@ function MuscleCard({ muscle, score, bestExercise, estimated1RM, history }: {
         <div className="flex items-center gap-2">
           <div>
             <p className="font-semibold text-foreground text-sm">{MUSCLE_LABELS[muscle]}</p>
-            <p className="text-xs text-muted-foreground">{bestExercise} · {estimated1RM}kg 1RM est.</p>
+            <p className="text-xs text-muted-foreground">{bestExercise} · {display1RM}{unit} 1RM est.</p>
           </div>
         </div>
         <div className="text-right">
@@ -123,8 +126,13 @@ function MuscleCard({ muscle, score, bestExercise, estimated1RM, history }: {
 export default function ProgressPage() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [unitSystem, setUnitSystem] = useState<"metric" | "imperial">("metric");
 
   useEffect(() => {
+    fetch("/api/profile").then(r => r.json()).then(p => {
+      if (p.unitSystem) setUnitSystem(p.unitSystem);
+    }).catch(() => {});
+
     fetch("/api/strength", { method: "POST" })
       .then(() => fetch("/api/strength"))
       .then(r => r.json())
@@ -196,6 +204,7 @@ export default function ProgressPage() {
               key={m.muscle}
               {...m}
               history={muscleHistory(m.muscle)}
+              unitSystem={unitSystem}
             />
           ))}
         </div>
