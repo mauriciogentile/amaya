@@ -115,6 +115,12 @@ export default function LibraryPage() {
               equipment === "dumbbell" ? "bg-orange-500 text-white" : "bg-muted text-muted-foreground"
             }`}
           >Dumbbell</button>
+          <button
+            onClick={() => setEquipment(eq => eq === "cable" ? null : "cable")}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+              equipment === "cable" ? "bg-orange-500 text-white" : "bg-muted text-muted-foreground"
+            }`}
+          >Cable</button>
         </div>
       </div>
 
