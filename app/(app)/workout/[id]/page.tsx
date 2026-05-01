@@ -87,6 +87,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
   const [saved, setSaved] = useState(false);
   const saveTimer = useRef<NodeJS.Timeout | undefined>(undefined);
   const [imperial, setImperial] = useState(false);
+  const [lastSets, setLastSets] = useState<Record<string, { setNumber: number; reps: number | null; weightKg: number | null }[]>>({});
 
   // Edit mode: either ?mode=edit or workout is already complete
   const [editMode, setEditMode] = useState(false);
@@ -97,6 +98,12 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
       setExercises(w.exercises || []);
       if (w.isComplete || searchParams.get("mode") === "edit") {
         setEditMode(true);
+      }
+      // Fetch last sets for all exercises in this workout
+      const names = (w.exercises || []).map((e: WorkoutExercise) => e.exerciseName);
+      if (names.length) {
+        const qs = new URLSearchParams({ names: names.join(","), excludeId: w._id });
+        fetch(`/api/workouts/last-sets?${qs}`).then(r => r.json()).then(setLastSets).catch(() => {});
       }
     });
   }, [id, searchParams]);
@@ -229,7 +236,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
 
   if (!workout) return (
     <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -253,7 +260,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
               <p className="text-foreground font-bold truncate max-w-[200px]">{workout.name}</p>
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 {editMode ? (
-                  <span className="text-emerald-400 font-medium">Editing</span>
+                  <span className="text-primary font-medium">Editing</span>
                 ) : (
                   <>
                     <span className="flex items-center gap-1"><Clock size={11} />{fmt(elapsed)}</span>
@@ -280,7 +287,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
       {/* Progress bar — only in active mode */}
       {!editMode && (
         <div className="h-1 bg-muted">
-          <div className="h-1 bg-emerald-500 transition-all" style={{ width: `${totalSets > 0 ? (doneSets / totalSets) * 100 : 0}%` }} />
+          <div className="h-1 bg-primary transition-all" style={{ width: `${totalSets > 0 ? (doneSets / totalSets) * 100 : 0}%` }} />
         </div>
       )}
 
@@ -294,16 +301,16 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
           const isCollapsed = collapsed[ei];
           const exDone = ex.sets.every(s => s.done);
           return (
-            <div key={ei} className={`rounded-2xl border overflow-hidden transition-all ${exDone ? "border-emerald-800/50 bg-emerald-950/20" : "border-border bg-card"}`}>
+            <div key={ei} className={`rounded-2xl border overflow-hidden transition-all ${exDone ? "border-primary/30 bg-primary/5" : "border-border bg-card"}`}>
               {/* Exercise header */}
               <button
                 className="w-full px-4 py-3 flex items-center gap-3 text-left"
                 onClick={() => setCollapsed(c => ({ ...c, [ei]: !c[ei] }))}
               >
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${exDone ? "bg-emerald-500" : "bg-muted"}`}>
-                  {exDone ? <Check size={14} className="text-black" /> : <span className="text-xs text-foreground font-bold">{ei + 1}</span>}
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${exDone ? "bg-primary" : "bg-muted"}`}>
+                  {exDone ? <Check size={14} className="text-primary-foreground" /> : <span className="text-xs text-foreground font-bold">{ei + 1}</span>}
                 </div>
-                <p className={`flex-1 font-semibold text-sm ${exDone ? "text-emerald-400" : "text-foreground"}`}>{ex.exerciseName}</p>
+                <p className={`flex-1 font-semibold text-sm ${exDone ? "text-primary" : "text-foreground"}`}>{ex.exerciseName}</p>
                 {isCollapsed ? <ChevronDown size={16} className="text-muted-foreground" /> : <ChevronUp size={16} className="text-muted-foreground" />}
               </button>
 
@@ -317,34 +324,53 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
                     <span />
                   </div>
 
-                  {ex.sets.map((set, si) => (
-                    <div key={si} className={`grid grid-cols-[28px_80px_80px_32px] gap-2 items-center transition-opacity ${set.done ? "opacity-60" : ""}`}>
-                      <span className="text-xs text-muted-foreground text-center font-medium">{set.setNumber}</span>
-                      <input
-                        type="number"
-                        inputMode="decimal"
-                        placeholder="0"
-                        value={toDisplay(set.weightKg, imperial)}
-                        onChange={e => updateSet(ei, si, "weightKg", e.target.value)}
-                        className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground text-center focus:outline-none focus:border-emerald-500"
-                      />
-                      <input
-                        type="number"
-                        inputMode="numeric"
-                        placeholder="0"
-                        value={set.reps ?? ""}
-                        onChange={e => updateSet(ei, si, "reps", e.target.value)}
-                        className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground text-center focus:outline-none focus:border-emerald-500"
-                      />
-                      <button
-                        onClick={() => completeSet(ei, si)}
-                        disabled={!set.done && (set.reps === null || set.reps <= 0)}
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${set.done ? "bg-emerald-500" : "bg-muted hover:bg-muted"} disabled:opacity-30`}
-                      >
-                        <Check size={14} className={set.done ? "text-black" : "text-muted-foreground"} />
-                      </button>
-                    </div>
-                  ))}
+                  {ex.sets.map((set, si) => {
+                    const prev = lastSets[ex.exerciseName]?.[si];
+                    const prevWeight = prev?.weightKg != null ? toDisplay(prev.weightKg, imperial) : null;
+                    const prevReps = prev?.reps != null ? String(prev.reps) : null;
+                    return (
+                      <div key={si} className={`transition-opacity ${set.done ? "opacity-60" : ""}`}>
+                        <div className="grid grid-cols-[28px_80px_80px_32px] gap-2 items-center">
+                          <span className="text-xs text-muted-foreground text-center font-medium">{set.setNumber}</span>
+                          <input
+                            type="number"
+                            inputMode="decimal"
+                            placeholder={prevWeight ?? "0"}
+                            value={toDisplay(set.weightKg, imperial)}
+                            onChange={e => updateSet(ei, si, "weightKg", e.target.value)}
+                            className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground text-center focus:outline-none focus:border-primary"
+                          />
+                          <input
+                            type="number"
+                            inputMode="numeric"
+                            placeholder={prevReps ?? "0"}
+                            value={set.reps ?? ""}
+                            onChange={e => updateSet(ei, si, "reps", e.target.value)}
+                            className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground text-center focus:outline-none focus:border-primary"
+                          />
+                          <button
+                            onClick={() => completeSet(ei, si)}
+                            disabled={!set.done && (set.reps === null || set.reps <= 0)}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${set.done ? "bg-primary" : "bg-muted hover:bg-muted"} disabled:opacity-30`}
+                          >
+                            <Check size={14} className={set.done ? "text-primary-foreground" : "text-muted-foreground"} />
+                          </button>
+                        </div>
+                        {prev && (
+                          <div className="grid grid-cols-[28px_80px_80px_32px] gap-2 mt-0.5">
+                            <span />
+                            <p className="text-[10px] text-muted-foreground text-center truncate">
+                              {prevWeight != null ? `Last: ${prevWeight} ${imperial ? "lbs" : "kg"}` : ""}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground text-center truncate">
+                              {prevReps != null ? `Last: ${prevReps} reps` : ""}
+                            </p>
+                            <span />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
 
                   <div className="flex gap-2 pt-1">
                     <button
@@ -376,7 +402,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
             <button
               onClick={saveAndBack}
               disabled={saving}
-              className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-2xl transition-colors text-lg flex items-center justify-center gap-2"
+              className="w-full py-4 bg-primary hover:bg-primary/80 text-primary-foreground font-bold rounded-2xl transition-colors text-lg flex items-center justify-center gap-2"
             >
               <Save size={18} />
               {saved ? "Saved!" : saving ? "Saving…" : "Save Changes"}
@@ -385,7 +411,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
             <button
               onClick={finish}
               disabled={finishing}
-              className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-2xl transition-colors text-lg"
+              className="w-full py-4 bg-primary hover:bg-primary/80 text-primary-foreground font-bold rounded-2xl transition-colors text-lg"
             >
               {finishing ? "Saving…" : "Finish Workout"}
             </button>
