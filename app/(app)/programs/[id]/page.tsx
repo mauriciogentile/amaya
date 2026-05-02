@@ -21,7 +21,7 @@ interface Program {
   days: ProgramDay[];
 }
 
-const locationLabel: Record<string, string> = { gym: "GYM 🏛️", home: "HOME 🏠", outdoor: "OUTDOOR 🌿" };
+const locationLabel: Record<string, string> = { gym: "GYM", home: "HOME", outdoor: "OUTDOOR" };
 const locationColor: Record<string, string> = {
   gym: "bg-teal-900 text-teal-300 border-teal-800",
   home: "bg-purple-900 text-purple-300 border-purple-800",

@@ -145,7 +145,7 @@ export default function LogPage() {
                         <p className="font-semibold text-foreground truncate">{prog.name}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-xs text-muted-foreground">
-                            {locationIcon[prog.location || "gym"]} {prog.location || "gym"}
+                            {prog.location || "gym"}
                           </span>
                           {prog.lastWorkoutAt && (
                             <span className="text-xs text-muted-foreground">· {timeAgo(prog.lastWorkoutAt)}</span>
