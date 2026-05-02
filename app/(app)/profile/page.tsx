@@ -58,6 +58,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [unitSystem, setUnitSystem] = useState<"metric" | "imperial">("metric");
+  const [accentColor, setAccentColor] = useState<string>("emerald");
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -72,6 +73,7 @@ export default function ProfilePage() {
       });
       setUnitSystem(data.unitSystem || "metric");
       if (data.theme) setTheme(data.theme);
+      setAccentColor(data.accentColor || "emerald");
     });
   }, []);
 
@@ -109,7 +111,7 @@ export default function ProfilePage() {
     await fetch("/api/profile", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...draft, unitSystem }),
+      body: JSON.stringify({ ...draft, unitSystem, accentColor }),
     });
     setSaving(false);
     setSaved(true);
@@ -131,9 +133,12 @@ export default function ProfilePage() {
         </div>
 
         {/* Appearance */}
-        <div className="rounded-xl border border-border bg-card p-4">
+        <div className="rounded-xl border border-border bg-card p-4 space-y-4">
+          <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">Appearance</p>
+          
+          {/* Light/dark toggle */}
           <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">Appearance</p>
+            <p className="text-sm text-foreground">Dark mode</p>
             <button
               onClick={async () => {
                 if (!mounted) return;
@@ -146,6 +151,34 @@ export default function ProfilePage() {
             >
               {resolvedTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
             </button>
+          </div>
+
+          {/* Color picker */}
+          <div className="space-y-2">
+            <p className="text-sm text-foreground">Accent color</p>
+            <div className="flex gap-3">
+              {([
+                { key: "emerald", color: "#10b981", label: "Emerald" },
+                { key: "blue",    color: "#3b82f6", label: "Blue"    },
+                { key: "purple",  color: "#a855f7", label: "Purple"  },
+                { key: "red",     color: "#ef4444", label: "Red"     },
+                { key: "orange",  color: "#f97316", label: "Orange"  },
+              ] as const).map(({ key, color, label }) => (
+                <button
+                  key={key}
+                  aria-label={label}
+                  onClick={() => {
+                    setAccentColor(key);
+                    document.documentElement.setAttribute("data-accent", key);
+                  }}
+                  style={{ backgroundColor: color }}
+                  className={`w-10 h-10 rounded-full transition-all ${accentColor === key ? "ring-2 ring-offset-2 ring-offset-card scale-110" : "opacity-70 hover:opacity-100"}`}
+                  title={label}
+                >
+                  {accentColor === key && <Check size={16} className="text-white mx-auto" />}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

@@ -14,6 +14,7 @@ const UserSchema = new Schema({
   goal:        { type: String, enum: ["lose_fat","build_muscle","maintain","performance","general"], default: "general" },
   unitSystem:  { type: String, enum: ["metric","imperial"], default: "metric" },
   theme:       { type: String, enum: ["light","dark"], default: "light" },
+  accentColor: { type: String, enum: ["emerald","blue","purple","red","orange"], default: "emerald" },
   onboarded:   { type: Boolean, default: false },
 }, { timestamps: true });
 
