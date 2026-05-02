@@ -3,15 +3,17 @@
 import { useEffect, useState } from "react";
 import { use } from "react";
 import { useRouter } from "next/navigation";
-import { Trophy, Clock, Dumbbell, TrendingUp, Home } from "lucide-react";
+import { Trophy, Clock, Dumbbell, TrendingUp, Home, Flame } from "lucide-react";
 
 export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [workout, setWorkout] = useState<any>(null);
+  const [summaryStats, setSummaryStats] = useState<any>(null);
 
   useEffect(() => {
     fetch(`/api/workouts/${id}`).then(r => r.json()).then(setWorkout);
+    fetch(`/api/workouts/${id}/summary-stats`).then(r => r.json()).then(setSummaryStats);
   }, [id]);
 
   if (!workout) return (
@@ -25,6 +27,10 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
     a + (e.sets?.filter((s: any) => s.done)?.reduce((sa: number, s: any) => sa + ((s.weightKg || 0) * (s.reps || 0)), 0) || 0), 0) || 0;
   const exercisesDone = workout.exercises?.filter((e: any) => e.sets?.some((s: any) => s.done))?.length || 0;
   const duration = workout.durationMin || 0;
+
+  const prs = summaryStats?.prs || {};
+  const bestSets = summaryStats?.bestSets || {};
+  const streak = summaryStats?.streak || 0;
 
   const stats = [
     { label: "Duration", value: `${duration}m`, icon: Clock },
@@ -54,6 +60,13 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
               <p className="text-xs text-muted-foreground">{label}</p>
             </div>
           ))}
+          {streak >= 2 && (
+            <div className="col-span-2 bg-card border border-border rounded-2xl p-4 flex flex-col gap-2">
+              <Flame size={18} className="text-orange-400" />
+              <p className="text-2xl font-bold text-foreground">{streak}d</p>
+              <p className="text-xs text-muted-foreground">Streak</p>
+            </div>
+          )}
         </div>
 
         {/* Exercise breakdown */}
@@ -63,11 +76,23 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
             {workout.exercises.map((ex: any, i: number) => {
               const doneSets = ex.sets?.filter((s: any) => s.done) || [];
               const vol = doneSets.reduce((a: number, s: any) => a + ((s.weightKg || 0) * (s.reps || 0)), 0);
+              const isPR = prs[ex.exerciseName];
+              const best = bestSets[ex.exerciseName];
               return (
                 <div key={i} className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-foreground font-medium">{ex.exerciseName}</p>
-                    <p className="text-xs text-muted-foreground">{doneSets.length} sets</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-foreground font-medium">{ex.exerciseName}</p>
+                      {isPR && (
+                        <span className="text-xs font-semibold text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded-full">🏆 PR</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {doneSets.length} sets
+                      {best && best.weightKg > 0 && (
+                        <span className="ml-2">{best.reps} × {best.weightKg} kg</span>
+                      )}
+                    </p>
                   </div>
                   {vol > 0 && <p className="text-sm text-emerald-400 font-semibold">{Math.round(vol).toLocaleString()} kg</p>}
                 </div>
