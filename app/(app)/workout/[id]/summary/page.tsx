@@ -22,10 +22,10 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
     </div>
   );
 
-  const totalSets = workout.exercises?.reduce((a: number, e: any) => a + (e.sets?.filter((s: any) => s.done)?.length || 0), 0) || 0;
+  const totalSets = workout.exercises?.reduce((a: number, e: any) => a + (e.sets?.length || 0), 0) || 0;
   const totalVolume = workout.exercises?.reduce((a: number, e: any) =>
-    a + (e.sets?.filter((s: any) => s.done)?.reduce((sa: number, s: any) => sa + ((s.weightKg || 0) * (s.reps || 0)), 0) || 0), 0) || 0;
-  const exercisesDone = workout.exercises?.filter((e: any) => e.sets?.some((s: any) => s.done))?.length || 0;
+    a + (e.sets?.reduce((sa: number, s: any) => sa + ((s.weightKg || 0) * (s.reps || 0)), 0) || 0), 0) || 0;
+  const exercisesDone = workout.exercises?.filter((e: any) => e.sets?.length > 0)?.length || 0;
   const duration = workout.durationMin || 0;
 
   const prs = summaryStats?.prs || {};
@@ -74,7 +74,7 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
           <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
             <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">Exercises</p>
             {workout.exercises.map((ex: any, i: number) => {
-              const doneSets = ex.sets?.filter((s: any) => s.done) || [];
+              const doneSets = ex.sets || [];
               const vol = doneSets.reduce((a: number, s: any) => a + ((s.weightKg || 0) * (s.reps || 0)), 0);
               const isPR = prs[ex.exerciseName];
               const best = bestSets[ex.exerciseName];

@@ -27,7 +27,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   const bestSets: Record<string, { reps: number; weightKg: number }> = {};
 
   for (const ex of workout.exercises || []) {
-    const doneSets = (ex.sets || []).filter((s: any) => s.done);
+    const doneSets = ex.sets || [];
     if (!doneSets.length) continue;
 
     // Current max weight
@@ -51,7 +51,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
           : e.exerciseName === ex.exerciseName;
         if (!match) continue;
         for (const s of e.sets || []) {
-          if (s.done && (s.weightKg || 0) > historicalMax) {
+          if ((s.weightKg || 0) > historicalMax) {
             historicalMax = s.weightKg;
           }
         }
