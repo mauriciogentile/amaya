@@ -215,7 +215,7 @@ export default function LogPage() {
           <button
             onClick={startWorkout}
             disabled={starting}
-            className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg transition-colors flex items-center justify-center gap-2 mb-3"
+            className="w-full py-4 rounded-2xl bg-primary hover:opacity-90 text-primary-foreground font-bold text-lg transition-colors flex items-center justify-center gap-2 mb-3"
             aria-label="Start Workout"
           >
             <Dumbbell size={20} />
