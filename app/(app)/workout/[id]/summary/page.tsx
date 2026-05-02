@@ -7,6 +7,22 @@ import { Trophy, Clock, Dumbbell, TrendingUp, Home, Flame } from "lucide-react";
 
 const KG_TO_LBS = 2.20462;
 
+const MUSCLE_PILL_CLASSES: Record<string, string> = {
+  chest: "bg-red-400/20 text-red-400",
+  back: "bg-blue-400/20 text-blue-400",
+  legs: "bg-emerald-400/20 text-emerald-400",
+  shoulders: "bg-orange-400/20 text-orange-400",
+  arms: "bg-purple-400/20 text-purple-400",
+  biceps: "bg-purple-400/20 text-purple-400",
+  triceps: "bg-purple-400/20 text-purple-400",
+  core: "bg-yellow-400/20 text-yellow-400",
+  glutes: "bg-pink-400/20 text-pink-400",
+  hamstrings: "bg-emerald-400/20 text-emerald-400",
+  quads: "bg-emerald-400/20 text-emerald-400",
+  calves: "bg-emerald-400/20 text-emerald-400",
+  cardio: "bg-cyan-400/20 text-cyan-400",
+};
+
 export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
@@ -24,7 +40,7 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
 
   if (!workout) return (
     <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -41,6 +57,9 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
   const prs = summaryStats?.prs || {};
   const bestSets = summaryStats?.bestSets || {};
   const streak = summaryStats?.streak || 0;
+  const caloriesBurned = summaryStats?.caloriesBurned ?? null;
+  const muscleGroups: string[] = summaryStats?.muscleGroups || [];
+  const vsLast: { volumeDiffKg: number; setsDiff: number } | null = summaryStats?.vsLast ?? null;
 
   const stats = [
     { label: "Duration", value: `${duration}m`, icon: Clock },
@@ -54,8 +73,8 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
       <div className="max-w-lg w-full space-y-6">
         {/* Trophy */}
         <div className="text-center space-y-2">
-          <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto">
-            <Trophy size={36} className="text-emerald-400" />
+          <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
+            <Trophy size={36} className="text-primary" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">Workout complete!</h1>
           <p className="text-muted-foreground text-sm truncate">{workout.name}</p>
@@ -65,19 +84,61 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
         <div className="grid grid-cols-2 gap-3">
           {stats.map(({ label, value, icon: Icon }) => (
             <div key={label} className="bg-card border border-border rounded-2xl p-4 flex flex-col gap-2">
-              <Icon size={18} className="text-emerald-400" />
+              <Icon size={18} className="text-primary" />
               <p className="text-2xl font-bold text-foreground">{value}</p>
               <p className="text-xs text-muted-foreground">{label}</p>
             </div>
           ))}
-          {streak >= 2 && (
-            <div className="col-span-2 bg-card border border-border rounded-2xl p-4 flex flex-col gap-2">
+          {caloriesBurned !== null && caloriesBurned > 0 && (
+            <div className="bg-card border border-border rounded-2xl p-4 flex flex-col gap-2">
               <Flame size={18} className="text-orange-400" />
+              <p className="text-2xl font-bold text-foreground">~{caloriesBurned}</p>
+              <p className="text-xs text-muted-foreground">Calories (kcal)</p>
+            </div>
+          )}
+          {streak >= 2 && (
+            <div className="bg-card border border-border rounded-2xl p-4 flex flex-col gap-2">
+              <Flame size={18} className="text-primary" />
               <p className="text-2xl font-bold text-foreground">{streak}d</p>
               <p className="text-xs text-muted-foreground">Streak</p>
             </div>
           )}
         </div>
+
+        {/* Muscle group pills */}
+        {muscleGroups.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {muscleGroups.map((mg) => {
+              const cls = MUSCLE_PILL_CLASSES[mg] || "bg-gray-400/20 text-gray-400";
+              return (
+                <span key={mg} className={`text-xs font-semibold px-3 py-1 rounded-full capitalize ${cls}`}>
+                  {mg}
+                </span>
+              );
+            })}
+          </div>
+        )}
+
+        {/* vs Last Session */}
+        {vsLast !== null && (
+          <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+            <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">vs Last Session</p>
+            <div className="flex gap-6">
+              <div>
+                <p className={`text-lg font-bold ${vsLast.volumeDiffKg >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                  {vsLast.volumeDiffKg >= 0 ? "+" : ""}{convertWeight(vsLast.volumeDiffKg)} {weightUnit}
+                </p>
+                <p className="text-xs text-muted-foreground">Volume</p>
+              </div>
+              <div>
+                <p className={`text-lg font-bold ${vsLast.setsDiff >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                  {vsLast.setsDiff >= 0 ? "+" : ""}{vsLast.setsDiff} sets
+                </p>
+                <p className="text-xs text-muted-foreground">Sets</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Exercise breakdown */}
         {workout.exercises?.length > 0 && (
@@ -104,7 +165,7 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
                       )}
                     </p>
                   </div>
-                  {vol > 0 && <p className="text-sm text-emerald-400 font-semibold">{convertWeight(vol).toLocaleString()} {weightUnit}</p>}
+                  {vol > 0 && <p className="text-sm text-primary font-semibold">{convertWeight(vol).toLocaleString()} {weightUnit}</p>}
                 </div>
               );
             })}
@@ -113,7 +174,7 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
 
         <button
           onClick={() => router.push("/dashboard")}
-          className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-2xl transition-colors flex items-center justify-center gap-2 min-h-[44px]"
+          className="w-full py-4 bg-primary hover:opacity-90 text-primary-foreground font-bold rounded-2xl transition-colors flex items-center justify-center gap-2 min-h-[44px]"
         >
           <Home size={18} />
           Back to Home

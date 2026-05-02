@@ -2,8 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Workout from "@/lib/models/Workout";
+import User from "@/lib/models/User";
+import Exercise from "@/lib/models/Exercise";
+import { EXERCISES } from "@/lib/exercises-seed";
 
 export const dynamic = "force-dynamic";
+
+// Build name → muscleGroups map from seed
+const seedMap: Record<string, string[]> = {};
+for (const ex of EXERCISES) {
+  seedMap[ex.name.toLowerCase()] = ex.muscleGroups;
+}
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
@@ -30,10 +39,8 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     const doneSets = ex.sets || [];
     if (!doneSets.length) continue;
 
-    // Current max weight
     const currentMax = doneSets.reduce((m: number, s: any) => Math.max(m, s.weightKg || 0), 0);
 
-    // Best set by volume
     let bestSet = { reps: 0, weightKg: 0 };
     for (const s of doneSets) {
       if ((s.weightKg || 0) * (s.reps || 0) > bestSet.weightKg * bestSet.reps) {
@@ -42,7 +49,6 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     }
     bestSets[ex.exerciseName] = bestSet;
 
-    // Historical max
     let historicalMax = 0;
     for (const w of otherWorkouts) {
       for (const e of w.exercises || []) {
@@ -51,9 +57,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
           : e.exerciseName === ex.exerciseName;
         if (!match) continue;
         for (const s of e.sets || []) {
-          if ((s.weightKg || 0) > historicalMax) {
-            historicalMax = s.weightKg;
-          }
+          if ((s.weightKg || 0) > historicalMax) historicalMax = s.weightKg;
         }
       }
     }
@@ -63,7 +67,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     }
   }
 
-  // Streak calculation
+  // Streak
   const allCompleted = await Workout.find({ userId, isComplete: true })
     .sort({ finishedAt: -1 })
     .lean() as any[];
@@ -75,7 +79,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 
   const today = toDay(new Date());
   const daySet = new Set<number>();
-  daySet.add(today); // current workout counts as today
+  daySet.add(today);
 
   for (const w of allCompleted) {
     if (w.finishedAt) daySet.add(toDay(new Date(w.finishedAt)));
@@ -88,5 +92,55 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     cursor -= 86400000;
   }
 
-  return NextResponse.json({ prs, bestSets, streak });
+  // Calories burned
+  const user = await User.findById(userId).lean() as any;
+  const bodyWeightKg = user?.weightKg || 70;
+  const durationHours = (workout.durationMin || 0) / 60;
+  const MET = 5;
+  const caloriesBurned = Math.round(MET * bodyWeightKg * durationHours);
+
+  // Muscle groups
+  const muscleSet = new Set<string>();
+  for (const ex of workout.exercises || []) {
+    if (ex.exerciseId) {
+      const dbEx = await Exercise.findById(ex.exerciseId).lean() as any;
+      if (dbEx) {
+        if (dbEx.bodyPart) muscleSet.add(dbEx.bodyPart.toLowerCase());
+        if (dbEx.target) muscleSet.add(dbEx.target.toLowerCase());
+        continue;
+      }
+    }
+    // Fallback to seed
+    const seedEntry = seedMap[ex.exerciseName?.toLowerCase()];
+    if (seedEntry?.[0]) muscleSet.add(seedEntry[0].toLowerCase());
+  }
+  const muscleGroups = Array.from(muscleSet).sort();
+
+  // vs Last Session
+  let vsLast: { volumeDiffKg: number; setsDiff: number } | null = null;
+  const currentVolume = (workout.exercises || []).reduce((a: number, e: any) =>
+    a + (e.sets || []).reduce((sa: number, s: any) => sa + ((s.weightKg || 0) * (s.reps || 0)), 0), 0);
+  const currentSets = (workout.exercises || []).reduce((a: number, e: any) => a + (e.sets?.length || 0), 0);
+
+  // Find most recent other completed workout with same templateId or name
+  const prevWorkouts = otherWorkouts
+    .filter((w: any) => {
+      if (workout.templateId && w.templateId && String(w.templateId) === String(workout.templateId)) return true;
+      if (w.name === workout.name) return true;
+      return false;
+    })
+    .sort((a: any, b: any) => new Date(b.finishedAt || b.createdAt).getTime() - new Date(a.finishedAt || a.createdAt).getTime());
+
+  if (prevWorkouts.length > 0) {
+    const prev = prevWorkouts[0];
+    const prevVolume = (prev.exercises || []).reduce((a: number, e: any) =>
+      a + (e.sets || []).reduce((sa: number, s: any) => sa + ((s.weightKg || 0) * (s.reps || 0)), 0), 0);
+    const prevSets = (prev.exercises || []).reduce((a: number, e: any) => a + (e.sets?.length || 0), 0);
+    vsLast = {
+      volumeDiffKg: Math.round((currentVolume - prevVolume) * 10) / 10,
+      setsDiff: currentSets - prevSets,
+    };
+  }
+
+  return NextResponse.json({ prs, bestSets, streak, caloriesBurned, muscleGroups, vsLast });
 }
