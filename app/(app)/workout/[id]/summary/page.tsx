@@ -5,15 +5,21 @@ import { use } from "react";
 import { useRouter } from "next/navigation";
 import { Trophy, Clock, Dumbbell, TrendingUp, Home, Flame } from "lucide-react";
 
+const KG_TO_LBS = 2.20462;
+
 export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [workout, setWorkout] = useState<any>(null);
   const [summaryStats, setSummaryStats] = useState<any>(null);
+  const [imperial, setImperial] = useState(false);
 
   useEffect(() => {
     fetch(`/api/workouts/${id}`).then(r => r.json()).then(setWorkout);
     fetch(`/api/workouts/${id}/summary-stats`).then(r => r.json()).then(setSummaryStats);
+    fetch("/api/profile").then(r => r.json()).then(u => {
+      if (u.unitSystem === "imperial") setImperial(true);
+    }).catch(() => {});
   }, [id]);
 
   if (!workout) return (
@@ -22,9 +28,13 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
     </div>
   );
 
+  const weightUnit = imperial ? "lbs" : "kg";
+  const convertWeight = (kg: number) => imperial ? Math.round(kg * KG_TO_LBS) : Math.round(kg);
+
   const totalSets = workout.exercises?.reduce((a: number, e: any) => a + (e.sets?.length || 0), 0) || 0;
-  const totalVolume = workout.exercises?.reduce((a: number, e: any) =>
+  const totalVolumeKg = workout.exercises?.reduce((a: number, e: any) =>
     a + (e.sets?.reduce((sa: number, s: any) => sa + ((s.weightKg || 0) * (s.reps || 0)), 0) || 0), 0) || 0;
+  const totalVolume = convertWeight(totalVolumeKg);
   const exercisesDone = workout.exercises?.filter((e: any) => e.sets?.length > 0)?.length || 0;
   const duration = workout.durationMin || 0;
 
@@ -36,7 +46,7 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
     { label: "Duration", value: `${duration}m`, icon: Clock },
     { label: "Exercises", value: String(exercisesDone), icon: Dumbbell },
     { label: "Sets", value: String(totalSets), icon: TrendingUp },
-    { label: "Volume", value: `${Math.round(totalVolume).toLocaleString()} kg`, icon: Trophy },
+    { label: "Volume", value: `${totalVolume.toLocaleString()} ${weightUnit}`, icon: Trophy },
   ];
 
   return (
@@ -90,11 +100,11 @@ export default function WorkoutSummaryPage({ params }: { params: Promise<{ id: s
                     <p className="text-xs text-muted-foreground">
                       {doneSets.length} sets
                       {best && best.weightKg > 0 && (
-                        <span className="ml-2">{best.reps} × {best.weightKg} kg</span>
+                        <span className="ml-2">{best.reps} × {convertWeight(best.weightKg)} {weightUnit}</span>
                       )}
                     </p>
                   </div>
-                  {vol > 0 && <p className="text-sm text-emerald-400 font-semibold">{Math.round(vol).toLocaleString()} kg</p>}
+                  {vol > 0 && <p className="text-sm text-emerald-400 font-semibold">{convertWeight(vol).toLocaleString()} {weightUnit}</p>}
                 </div>
               );
             })}
