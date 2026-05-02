@@ -103,7 +103,27 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
       const names = (w.exercises || []).map((e: WorkoutExercise) => e.exerciseName);
       if (names.length) {
         const qs = new URLSearchParams({ names: names.join(","), excludeId: w._id });
-        fetch(`/api/workouts/last-sets?${qs}`).then(r => r.json()).then(setLastSets).catch(() => {});
+        fetch(`/api/workouts/last-sets?${qs}`).then(r => r.json()).then(ls => {
+          setLastSets(ls);
+          // Pre-fill set values with last session's data (only for new/incomplete workouts)
+          if (!w.isComplete && searchParams.get("mode") !== "edit") {
+            setExercises(prev => prev.map(ex => {
+              const prevSets = ls[ex.exerciseName];
+              if (!prevSets?.length) return ex;
+              return {
+                ...ex,
+                sets: ex.sets.map((s, si) => {
+                  const p = prevSets[si] ?? prevSets[prevSets.length - 1];
+                  return {
+                    ...s,
+                    weightKg: s.weightKg ?? p?.weightKg ?? null,
+                    reps: s.reps ?? p?.reps ?? null,
+                  };
+                }),
+              };
+            }));
+          }
+        }).catch(() => {});
       }
     });
   }, [id, searchParams]);
