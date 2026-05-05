@@ -58,7 +58,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [unitSystem, setUnitSystem] = useState<"metric" | "imperial">("metric");
-  const [accentColor, setAccentColor] = useState<string>("emerald");
+  const [accentColor, setAccentColor] = useState<string>("lime");
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -73,7 +73,7 @@ export default function ProfilePage() {
       });
       setUnitSystem(data.unitSystem || "metric");
       if (data.theme) setTheme(data.theme);
-      setAccentColor(data.accentColor || "emerald");
+      setAccentColor(data.accentColor || "lime");
     });
   }, []);
 
@@ -158,11 +158,11 @@ export default function ProfilePage() {
             <p className="text-sm text-foreground">Accent color</p>
             <div className="flex gap-3">
               {([
-                { key: "emerald", color: "#10b981", label: "Emerald" },
-                { key: "blue",    color: "#3b82f6", label: "Blue"    },
-                { key: "purple",  color: "#a855f7", label: "Purple"  },
-                { key: "red",     color: "#ef4444", label: "Red"     },
-                { key: "orange",  color: "#f97316", label: "Orange"  },
+                { key: "lime",   color: "#84cc16", label: "Lime"   },
+                { key: "cyan",   color: "#06b6d4", label: "Cyan"   },
+                { key: "violet", color: "#7c3aed", label: "Violet" },
+                { key: "rose",   color: "#f43f5e", label: "Rose"   },
+                { key: "amber",  color: "#f59e0b", label: "Amber"  },
               ] as const).map(({ key, color, label }) => (
                 <button
                   key={key}
