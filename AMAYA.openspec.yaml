@@ -1,0 +1,421 @@
+openspec: "1.0"
+
+# ─────────────────────────────────────────────
+# AMAYA FITNESS APP
+# Generated from source code analysis
+# ─────────────────────────────────────────────
+
+identity:
+  name: "AmayaFitnessApp"
+  version: "1.0.0"
+  description: >
+    A mobile-first progressive web app (PWA) for personal fitness tracking.
+    Users can organize training programs, log workouts in real time, track
+    strength progress over time, and browse an exercise library.
+  url: "https://amaya-fitness.vercel.app"
+  repository: "https://github.com/mauriciogentile/amaya"
+  license: "private"
+
+# ─────────────────────────────────────────────
+# TECH STACK
+# ─────────────────────────────────────────────
+
+capabilities:
+  runtime: "Node.js (Next.js 16 App Router, server components + client components)"
+  database: "MongoDB via Mongoose"
+  auth:
+    strategy: "JWT (NextAuth.js beta)"
+    providers:
+      - name: "credentials"
+        fields: [email, password]
+        hashing: "bcryptjs"
+      - name: "google"
+        oauth: true
+        auto_creates_user: true
+  hosting: "Vercel (production)"
+  styling: "Tailwind CSS + shadcn/ui"
+  charting: "Recharts"
+  pwa: true
+
+# ─────────────────────────────────────────────
+# DATA MODELS
+# ─────────────────────────────────────────────
+
+data_models:
+
+  User:
+    description: "Registered user account and profile settings"
+    fields:
+      name:        { type: String }
+      firstName:   { type: String }
+      lastName:    { type: String }
+      email:       { type: String, required: true, unique: true }
+      password:    { type: String, hashed: true, excluded_by_default: true }
+      image:       { type: String, description: "Avatar URL (Google or upload)" }
+      age:         { type: Number }
+      weightKg:    { type: Number }
+      heightCm:    { type: Number }
+      goal:
+        type: enum
+        values: [lose_fat, build_muscle, maintain, performance, general]
+        default: general
+      unitSystem:
+        type: enum
+        values: [metric, imperial]
+        default: metric
+      theme:
+        type: enum
+        values: [light, dark]
+        default: light
+      accentColor:
+        type: enum
+        values: [emerald, blue, purple, red, orange]
+        default: emerald
+      onboarded:   { type: Boolean, default: false }
+
+  Exercise:
+    description: "Exercise from the seeded library or user-created custom exercise"
+    fields:
+      exId:             { type: String, description: "Original dataset ID e.g. 0001" }
+      name:             { type: String, required: true }
+      bodyPart:         { type: String }
+      equipment:        { type: String }
+      target:           { type: String, description: "Primary muscle targeted" }
+      secondaryMuscles: { type: "[String]" }
+      instructions:     { type: String }
+      instructionSteps: { type: "[String]" }
+      gifUrl:           { type: String }
+      imageUrl:         { type: String }
+      isCustom:         { type: Boolean, default: false }
+      createdBy:        { type: String, description: "userId for custom exercises" }
+    indexes:
+      - fields: [name, bodyPart, target]
+        type: text
+
+  Workout:
+    description: "A single training session, either in-progress or completed"
+    fields:
+      userId:      { type: String, required: true }
+      name:        { type: String, default: "Workout" }
+      templateId:  { type: ObjectId, ref: Program, description: "Source program if started from one" }
+      exercises:
+        type: array
+        items:
+          exerciseId:    { type: ObjectId, ref: Exercise }
+          exerciseName:  { type: String }
+          restSeconds:   { type: Number, default: 90 }
+          order:         { type: Number }
+          supersetGroup: { type: Number }
+          note:          { type: String }
+          sets:
+            type: array
+            items:
+              setNumber:   { type: Number }
+              reps:        { type: Number }
+              weightKg:    { type: Number }
+              rpe:         { type: Number, description: "Rate of Perceived Exertion 1-10" }
+              rir:         { type: Number, description: "Reps In Reserve" }
+              type:        { type: enum, values: [normal, warmup, dropset, failure], default: normal }
+              note:        { type: String }
+              completedAt: { type: Date }
+      startedAt:   { type: Date }
+      finishedAt:  { type: Date }
+      durationMin: { type: Number }
+      note:        { type: String }
+      isComplete:  { type: Boolean, default: false }
+
+  Program:
+    description: "A multi-day training program template owned by a user"
+    fields:
+      userId:      { type: String, required: true }
+      name:        { type: String, required: true }
+      description: { type: String }
+      category:    { type: String }
+      location:    { type: enum, values: [gym, home, outdoor], default: gym }
+      isPublic:    { type: Boolean, default: false }
+      days:
+        type: array
+        items:
+          name:        { type: String, required: true }
+          description: { type: String }
+          order:       { type: Number }
+          notes:       { type: String }
+          exercises:
+            type: array
+            items:
+              exerciseId:  { type: ObjectId, ref: Exercise }
+              name:        { type: String, required: true }
+              muscleGroup: { type: String }
+              sets:        { type: Number, default: 3 }
+              minReps:     { type: Number, default: 8 }
+              maxReps:     { type: Number, default: 12 }
+              restSeconds: { type: Number, default: 90 }
+              note:        { type: String }
+              order:       { type: Number }
+
+  StrengthSnapshot:
+    description: "Weekly computed strength score per user, per muscle group"
+    fields:
+      userId:       { type: String, required: true }
+      weekStart:    { type: Date, required: true }
+      overallScore: { type: Number }
+      muscles:
+        type: array
+        items:
+          muscle:       { type: String }
+          score:        { type: Number }
+          bestExercise: { type: String }
+          estimated1RM: { type: Number }
+    indexes:
+      - fields: [userId, weekStart]
+        order: desc
+
+# ─────────────────────────────────────────────
+# API INTERFACES
+# ─────────────────────────────────────────────
+
+interfaces:
+  auth_requirement: "All endpoints require a valid JWT session except /api/auth/*"
+  base_url: "/api"
+
+  endpoints:
+
+    # AUTH
+    - path: /auth/[...nextauth]
+      methods: [GET, POST]
+      description: "NextAuth.js handler — sign-in, sign-out, session, OAuth callback"
+
+    - path: /auth/register
+      methods: [POST]
+      description: "Create a new credentials-based user account"
+      body: { email: String, password: String, name: String }
+
+    # USER / PROFILE
+    - path: /user/onboard
+      methods: [POST]
+      description: "Complete onboarding — sets user goals, units, physical stats"
+      body: { goal: enum, unitSystem: enum, age: Number, weightKg: Number, heightCm: Number }
+
+    - path: /profile
+      methods: [GET, PATCH]
+      get_returns: "User profile fields (firstName, lastName, email, image, weightKg, heightCm, unitSystem, theme, accentColor)"
+      patch_body: { firstName: String, lastName: String, weightKg: Number, heightCm: Number, unitSystem: enum, theme: enum, accentColor: enum }
+
+    # EXERCISES
+    - path: /exercises
+      methods: [GET, POST]
+      get_params: { q: "search query", bodyPart: String, target: String }
+      get_returns: "Paginated exercise list"
+      post_description: "Create a custom exercise"
+
+    - path: /exercises/[id]
+      methods: [GET, PATCH, DELETE]
+      description: "Fetch, update, or delete a single exercise"
+
+    - path: /exercises/seed
+      methods: [POST]
+      description: "Seed the exercise library from the bundled dataset (admin/dev)"
+
+    # WORKOUTS
+    - path: /workouts
+      methods: [GET, POST]
+      get_returns: "Last 20 workouts for the current user, sorted by startedAt desc"
+      post_description: "Start a new workout session, optionally from a program day"
+      post_body:
+        name: String
+        programId: ObjectId
+        dayId: ObjectId
+        exercises:
+          type: array
+          items: { exerciseId: ObjectId, name: String, sets: Number, restSeconds: Number }
+
+    - path: /workouts/[id]
+      methods: [GET, PATCH, DELETE]
+      patch_description: "Update sets in-progress, or finish the workout (sets isComplete=true, calculates duration, triggers strength snapshot recompute)"
+      patch_body: { exercises: array, finish: Boolean, note: String }
+      delete_description: "Cancel/abort a workout"
+
+    - path: /workouts/active
+      methods: [GET]
+      description: "Returns the most recent incomplete workout for the user, if any"
+
+    - path: /workouts/last-sets
+      methods: [GET]
+      description: "Returns last completed sets per exercise for pre-filling the tracking UI"
+
+    - path: /workouts/calendar
+      methods: [GET]
+      description: "Returns workout completion data grouped by date for the calendar heatmap"
+
+    - path: /workouts/[id]/summary-stats
+      methods: [GET]
+      description: "Returns aggregate stats for a completed workout (volume, sets, PRs)"
+
+    # PROGRAMS
+    - path: /programs
+      methods: [GET, POST]
+      get_returns: "All programs owned by the user (auto-seeds PPL if none exist)"
+      post_description: "Create a new program"
+
+    - path: /programs/[id]
+      methods: [GET, PATCH, DELETE]
+      description: "Fetch, update, or delete a program"
+
+    - path: /programs/[id]/day/[dayId]/exercise
+      methods: [POST]
+      description: "Add an exercise to a specific program day"
+
+    - path: /programs/[id]/day/[dayId]/exercise/[exerciseId]
+      methods: [PATCH, DELETE]
+      description: "Update or remove an exercise from a program day"
+
+    - path: /programs/for-workout
+      methods: [GET]
+      description: "Returns programs and their days for the 'start workout' picker"
+
+    # STRENGTH / PROGRESS
+    - path: /strength
+      methods: [GET, POST]
+      get_returns: "Last 12 weekly StrengthSnapshot records for chart display"
+      post_description: "Compute and upsert StrengthSnapshot for the current week (triggered automatically on workout finish)"
+
+# ─────────────────────────────────────────────
+# PAGES / NAVIGATION
+# ─────────────────────────────────────────────
+
+pages:
+
+  public:
+    - path: /
+      description: "Landing / marketing page"
+    - path: /sign-in
+      description: "Sign in with credentials or Google OAuth"
+    - path: /sign-up
+      description: "Register a new credentials account"
+    - path: /onboarding
+      description: "Post-registration onboarding flow (goals, units, physical info)"
+
+  app:
+    layout: "Bottom navigation bar with 5 tabs: Dashboard, Programs, Library, Progress, Profile"
+    routes:
+
+      - path: /dashboard
+        description: "Home screen — active workout banner, recent workouts, weekly summary"
+
+      - path: /dashboard/workout/new
+        description: "Start a new workout — select a program day or start blank"
+
+      - path: /workout/[id]
+        description: "Live workout tracking page — log sets (weight + reps), complete sets, add exercises, finish or cancel workout"
+        key_behaviors:
+          - "Auto-fills weight/reps from last session via /api/workouts/last-sets"
+          - "Weight displayed in user's unit system (kg or lbs)"
+          - "Text inputs select-all on focus for fast editing"
+          - "Sets marked done are persisted immediately; only completed sets stored in DB"
+
+      - path: /workout/[id]/summary
+        description: "Post-workout summary — duration, total volume, sets per muscle group, PRs"
+
+      - path: /programs
+        description: "List user's training programs"
+
+      - path: /programs/[id]
+        description: "Program detail — view days and exercises, edit program metadata"
+
+      - path: /programs/[id]/day/[dayId]
+        description: "Program day detail — manage exercise list, sets/reps targets, rest times"
+
+      - path: /library
+        description: "Browse exercise library — search by name, filter by body part / equipment / target muscle"
+
+      - path: /library/[id]
+        description: "Exercise detail — instructions, animated GIF, muscle diagram, history"
+
+      - path: /exercises
+        description: "Full exercise list (used within library and exercise picker)"
+
+      - path: /progress
+        description: "Strength progress charts — overall score + per-muscle trends over 12 weeks (Recharts)"
+
+      - path: /profile
+        description: "User profile — edit name, weight, height, units, theme, accent color"
+
+# ─────────────────────────────────────────────
+# KEY BEHAVIORS & BUSINESS LOGIC
+# ─────────────────────────────────────────────
+
+behaviors:
+  strength_score:
+    description: >
+      After each workout is finished, the app triggers POST /api/strength which
+      computes a StrengthSnapshot for the current week. It calculates estimated
+      1RMs per exercise using Epley/Brzycki formula, maps exercises to muscle
+      groups, and aggregates an overall strength score. Falls back to last 20
+      workouts if no workouts exist for the current week.
+    trigger: "Automatic on PATCH /api/workouts/[id] with finish=true"
+
+  unit_system:
+    description: >
+      All weights stored internally in kg. Display layer converts to lbs when
+      user's unitSystem === 'imperial' using KG_TO_LBS = 2.20462. Profile
+      fetched from /api/profile to determine display unit.
+
+  onboarding:
+    description: >
+      New users (both credentials and Google OAuth) have onboarded=false.
+      The app redirects them to /onboarding before accessing any app routes.
+      POST /api/user/onboard sets onboarded=true.
+
+  program_seeding:
+    description: >
+      GET /api/programs auto-seeds a default 'Push Pull Legs (PPL)' 6-day
+      program for new users who have no programs yet.
+
+  exercise_library:
+    description: >
+      Exercises are seeded from a bundled TypeScript dataset (lib/exercises-seed.ts)
+      containing bodyPart, target, and muscleGroup mappings. Custom exercises can
+      be created by users (isCustom=true, createdBy=userId).
+
+  pwa:
+    description: >
+      App is installable as a PWA. Includes install prompt component and
+      safe-area-inset handling for bottom navigation (pb-28 to clear nav bar,
+      pt-[calc(2.5rem+env(safe-area-inset-top))] on all app pages).
+
+# ─────────────────────────────────────────────
+# COMPOSITION / INTEGRATIONS
+# ─────────────────────────────────────────────
+
+composition:
+  external_services:
+    - name: "MongoDB Atlas"
+      purpose: "Primary database"
+      connection: "MONGODB_URI env var via lib/db.ts (connection pooling with cached client)"
+
+    - name: "NextAuth.js"
+      purpose: "Authentication and session management"
+      env_vars: [NEXTAUTH_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET]
+
+    - name: "Vercel"
+      purpose: "Hosting, CI/CD, edge functions"
+      project_id: "prj_owyxFWURUIGbuZ7UeQyIzpSOkz0w"
+
+  internal_modules:
+    - name: "lib/strength-score.ts"
+      purpose: "Computes estimated 1RM and per-muscle strength scores from workout history"
+
+    - name: "lib/exercises-seed.ts"
+      purpose: "Static exercise dataset with muscleGroup mappings used for library seeding"
+
+    - name: "lib/db.ts"
+      purpose: "Mongoose connection singleton with caching for serverless environment"
+
+    - name: "components/ExercisePicker.tsx"
+      purpose: "Reusable exercise search/select sheet used in workout and program editing flows"
+
+    - name: "components/WorkoutCalendar.tsx"
+      purpose: "Monthly calendar heatmap showing workout completion history"
+
+    - name: "components/bottom-nav.tsx"
+      purpose: "Persistent bottom navigation bar (5 tabs) present across all app routes"
