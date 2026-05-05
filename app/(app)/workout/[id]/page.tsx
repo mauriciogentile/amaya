@@ -358,6 +358,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
                             placeholder={prevWeight ?? "0"}
                             value={toDisplay(set.weightKg, imperial)}
                             onChange={e => updateSet(ei, si, "weightKg", e.target.value)}
+                            onFocus={e => e.target.select()}
                             className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground text-center focus:outline-none focus:border-primary"
                           />
                           <input
@@ -366,6 +367,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
                             placeholder={prevReps ?? "0"}
                             value={set.reps ?? ""}
                             onChange={e => updateSet(ei, si, "reps", e.target.value)}
+                            onFocus={e => e.target.select()}
                             className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground text-center focus:outline-none focus:border-primary"
                           />
                           <button
