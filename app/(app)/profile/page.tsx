@@ -122,7 +122,7 @@ export default function ProfilePage() {
   };
 
   const deleteAccount = async () => {
-    if (deleteConfirm !== "delete") return;
+    if (deleteConfirm.toLowerCase() !== "delete") return;
     setDeleting(true);
     await fetch("/api/account", { method: "DELETE" });
     await signOut({ callbackUrl: "/sign-in" });
@@ -324,7 +324,7 @@ export default function ProfilePage() {
               </button>
               <button
                 onClick={deleteAccount}
-                disabled={deleteConfirm !== "delete" || deleting}
+                disabled={deleteConfirm.toLowerCase() !== "delete" || deleting}
                 className="flex-1 py-3 rounded-xl font-semibold bg-red-600 text-white disabled:opacity-40 hover:bg-red-500 transition-colors"
               >
                 {deleting ? "Deleting..." : "Delete"}
