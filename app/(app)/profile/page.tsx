@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
-import { Check, LogOut, Sun, Moon } from "lucide-react";
+import { Check, LogOut, Sun, Moon, Trash2 } from "lucide-react";
 
 interface Profile {
   firstName: string;
@@ -57,6 +57,9 @@ export default function ProfilePage() {
   const [draft, setDraft] = useState<Partial<Profile>>({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const [unitSystem, setUnitSystem] = useState<"metric" | "imperial">("metric");
   const [accentColor, setAccentColor] = useState<string>("lime");
 
@@ -116,6 +119,13 @@ export default function ProfilePage() {
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const deleteAccount = async () => {
+    if (deleteConfirm !== "delete") return;
+    setDeleting(true);
+    await fetch("/api/account", { method: "DELETE" });
+    await signOut({ callbackUrl: "/sign-in" });
   };
 
   const fullName = `${draft.firstName || ""} ${draft.lastName || ""}`.trim() || session?.user?.name || "";
@@ -268,7 +278,61 @@ export default function ProfilePage() {
           <LogOut size={16} />
           Sign Out
         </button>
+
+        {/* Delete account */}
+        <button
+          onClick={() => { setShowDeleteModal(true); setDeleteConfirm(""); }}
+          className="w-full py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 text-red-500 hover:text-red-400 transition-colors min-h-[44px]"
+        >
+          <Trash2 size={16} />
+          Delete Account
+        </button>
       </div>
+
+      {/* Delete confirmation modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm space-y-4">
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                <Trash2 size={22} className="text-red-500" />
+              </div>
+              <h2 className="text-lg font-bold text-foreground">Delete Account</h2>
+              <p className="text-sm text-muted-foreground">
+                This will permanently delete your account, all past workouts, and all programs. This action cannot be undone.
+              </p>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">
+                Type <span className="text-red-400 font-mono">delete</span> to confirm
+              </label>
+              <input
+                type="text"
+                value={deleteConfirm}
+                onChange={e => setDeleteConfirm(e.target.value)}
+                placeholder="delete"
+                autoFocus
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-red-500"
+              />
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-3 rounded-xl font-semibold border border-border text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={deleteAccount}
+                disabled={deleteConfirm !== "delete" || deleting}
+                className="flex-1 py-3 rounded-xl font-semibold bg-red-600 text-white disabled:opacity-40 hover:bg-red-500 transition-colors"
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
