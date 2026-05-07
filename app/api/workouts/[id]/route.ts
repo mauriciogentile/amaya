@@ -24,11 +24,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   await connectDB();
 
   const body = await req.json();
-  const { exercises, finish, note } = body;
+  const { exercises, finish, note, restTimerEndsAt } = body;
 
   const update: any = {};
   if (exercises) update.exercises = exercises;
   if (note !== undefined) update.note = note;
+  if (restTimerEndsAt !== undefined) update.restTimerEndsAt = restTimerEndsAt ? new Date(restTimerEndsAt) : null;
   if (finish) {
     update.isComplete = true;
     update.finishedAt = new Date();

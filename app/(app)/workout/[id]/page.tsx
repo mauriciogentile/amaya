@@ -39,18 +39,20 @@ interface Workout {
   exercises: WorkoutExercise[];
   startedAt: string;
   isComplete: boolean;
+  restTimerEndsAt?: string | null;
 }
 
-function RestTimer({ seconds, onDone }: { seconds: number; onDone: () => void }) {
-  const [left, setLeft] = useState(seconds);
+function RestTimer({ endsAt, totalSeconds, onDone }: { endsAt: number; totalSeconds: number; onDone: () => void }) {
+  const calcLeft = () => Math.max(0, Math.round((endsAt - Date.now()) / 1000));
+  const [left, setLeft] = useState(calcLeft);
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
   useEffect(() => {
     if (left <= 0) { onDoneRef.current(); return; }
-    const t = setTimeout(() => setLeft(l => l - 1), 1000);
+    const t = setTimeout(() => setLeft(calcLeft()), 1000);
     return () => clearTimeout(t);
   }, [left]);
-  const pct = (left / seconds) * 100;
+  const pct = (left / totalSeconds) * 100;
   const mm = String(Math.floor(left / 60)).padStart(2, "0");
   const ss = String(left % 60).padStart(2, "0");
   return (
@@ -79,7 +81,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [exercises, setExercises] = useState<WorkoutExercise[]>([]);
   const [collapsed, setCollapsed] = useState<Record<number, boolean>>({});
-  const [resting, setResting] = useState<{ seconds: number } | null>(null);
+  const [resting, setResting] = useState<{ endsAt: number; totalSeconds: number } | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [finishing, setFinishing] = useState(false);
   const [aborting, setAborting] = useState(false);
@@ -98,6 +100,15 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
       setExercises(w.exercises || []);
       if (w.isComplete || searchParams.get("mode") === "edit") {
         setEditMode(true);
+      }
+      // Restore rest timer if it was active when the session closed
+      if (!w.isComplete && w.restTimerEndsAt) {
+        const endsAt = new Date(w.restTimerEndsAt).getTime();
+        if (endsAt > Date.now()) {
+          // Infer totalSeconds from the endsAt — cap at 600 to be safe
+          const secondsLeft = Math.round((endsAt - Date.now()) / 1000);
+          setResting({ endsAt, totalSeconds: secondsLeft }); // total unknown; use remaining
+        }
       }
       // Fetch last sets for all exercises in this workout
       const names = (w.exercises || []).map((e: WorkoutExercise) => e.exerciseName);
@@ -163,6 +174,26 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
     }
   }, [id]);
 
+  // Persist rest timer endsAt to DB so it survives page reload
+  const persistRestTimer = useCallback((endsAt: string | null) => {
+    fetch(`/api/workouts/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ restTimerEndsAt: endsAt }),
+    }).catch(() => {});
+  }, [id]);
+
+  function startResting(seconds: number) {
+    const endsAt = Date.now() + seconds * 1000;
+    setResting({ endsAt, totalSeconds: seconds });
+    persistRestTimer(new Date(endsAt).toISOString());
+  }
+
+  function stopResting() {
+    setResting(null);
+    persistRestTimer(null);
+  }
+
   function updateSet(exIdx: number, setIdx: number, field: "reps" | "weightKg", value: string) {
     setExercises(prev => {
       const next = prev.map((ex, ei) => ei !== exIdx ? ex : {
@@ -190,7 +221,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
       return next;
     });
     // No rest timer in edit mode
-    if (!set.done && !editMode) setResting({ seconds: ex.restSeconds || 90 });
+    if (!set.done && !editMode) startResting(ex.restSeconds || 90);
   }
 
   function addSet(exIdx: number) {
@@ -262,7 +293,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
 
   return (
     <div className="flex flex-col min-h-screen bg-background pb-48">
-      {resting && !editMode && <RestTimer seconds={resting.seconds} onDone={() => setResting(null)} />}
+      {resting && !editMode && <RestTimer endsAt={resting.endsAt} totalSeconds={resting.totalSeconds} onDone={stopResting} />}
 
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))]">

@@ -31,6 +31,7 @@ const WorkoutSchema = new Schema({
   durationMin: Number,
   note:        String,
   isComplete:  { type: Boolean, default: false },
+  restTimerEndsAt: Date,
 }, { timestamps: true });
 
 export default mongoose.models.Workout || mongoose.model("Workout", WorkoutSchema);
