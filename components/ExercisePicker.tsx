@@ -91,7 +91,7 @@ export function ExercisePicker({ open, onClose, onSelect }: Props) {
       <div className="absolute inset-0 bg-background/60" onClick={onClose} />
 
       {/* Sheet */}
-      <div className="relative mt-auto bg-[#1a1a1a] rounded-t-2xl h-[92vh] flex flex-col overflow-hidden">
+      <div className="relative mt-auto bg-card rounded-t-2xl h-[92vh] flex flex-col overflow-hidden">
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full bg-white/20" />
