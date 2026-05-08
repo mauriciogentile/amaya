@@ -385,7 +385,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
               {!isCollapsed && (
                 <div className="px-4 pb-4 space-y-2">
                   {/* Column headers */}
-                  <div className="grid grid-cols-[28px_80px_80px_32px] gap-2 text-xs text-muted-foreground mb-1">
+                  <div className="grid grid-cols-[28px_1fr_1fr_36px] gap-2 text-xs text-muted-foreground mb-1">
                     <span className="text-center">Set</span>
                     <span className="text-center">{imperial ? "lbs" : "kg"}</span>
                     <span className="text-center">Reps</span>
@@ -398,7 +398,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
                     const prevReps = prev?.reps != null ? String(prev.reps) : null;
                     return (
                       <div key={si} className={`transition-opacity ${set.done ? "opacity-60" : ""}`}>
-                        <div className="grid grid-cols-[28px_80px_80px_32px] gap-2 items-center">
+                        <div className="grid grid-cols-[28px_1fr_1fr_36px] gap-2 items-center">
                           <span className="text-xs text-muted-foreground text-center font-medium">{set.setNumber}</span>
                           <input
                             type="number"
@@ -407,7 +407,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
                             value={toDisplay(set.weightKg, imperial)}
                             onChange={e => updateSet(ei, si, "weightKg", e.target.value)}
                             onFocus={e => e.target.select()}
-                            className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground text-center focus:outline-none focus:border-primary"
+                            className="bg-muted border border-border rounded-lg px-3 py-2.5 text-base text-foreground font-semibold text-center focus:outline-none focus:border-primary w-full"
                           />
                           <input
                             type="number"
@@ -416,7 +416,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
                             value={set.reps ?? ""}
                             onChange={e => updateSet(ei, si, "reps", e.target.value)}
                             onFocus={e => e.target.select()}
-                            className="bg-muted border border-border rounded-lg px-3 py-2 text-sm text-foreground text-center focus:outline-none focus:border-primary"
+                            className="bg-muted border border-border rounded-lg px-3 py-2.5 text-base text-foreground font-semibold text-center focus:outline-none focus:border-primary w-full"
                           />
                           <button
                             onClick={() => completeSet(ei, si)}
@@ -427,7 +427,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
                           </button>
                         </div>
                         {prev && (
-                          <div className="grid grid-cols-[28px_80px_80px_32px] gap-2 mt-0.5">
+                          <div className="grid grid-cols-[28px_1fr_1fr_36px] gap-2 mt-0.5">
                             <span />
                             <p className="text-[10px] text-muted-foreground text-center truncate">
                               {prevWeight != null ? `Last: ${prevWeight} ${imperial ? "lbs" : "kg"}` : ""}
