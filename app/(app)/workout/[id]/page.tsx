@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { use } from "react";
 import { Check, ChevronDown, ChevronUp, Clock, X, Plus, Trash2, Ban, ArrowLeft, Save } from "lucide-react";
+import { ExercisePicker } from "@/components/ExercisePicker";
 
 const KG_TO_LBS = 2.20462;
 function toDisplay(kg: number | null, imperial: boolean): string {
@@ -90,6 +91,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
   const saveTimer = useRef<NodeJS.Timeout | undefined>(undefined);
   const [imperial, setImperial] = useState(false);
   const [lastSets, setLastSets] = useState<Record<string, { setNumber: number; reps: number | null; weightKg: number | null }[]>>({});
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   // Edit mode: either ?mode=edit or workout is already complete
   const [editMode, setEditMode] = useState(false);
@@ -264,6 +266,21 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
       body: JSON.stringify({ exercises: doneExercises, finish: true }),
     });
     router.push(`/workout/${id}/summary`);
+  }
+
+  function addExerciseAdHoc(ex: { _id: string; name: string; bodyPart: string; equipment: string; target: string; gifUrl: string; imageUrl: string }) {
+    setExercises(prev => {
+      const next = [...prev, {
+        exerciseName: ex.name,
+        exerciseId: ex._id,
+        sets: [{ setNumber: 1, reps: null, weightKg: null, type: "normal" }],
+        restSeconds: 90,
+        order: prev.length,
+      }];
+      save(next, false);
+      return next;
+    });
+    setPickerOpen(false);
   }
 
   async function saveAndBack() {
@@ -447,6 +464,18 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
           );
         })}
       </div>
+
+      {/* Add Exercise button */}
+      <div className="px-4 pt-2 pb-4 max-w-lg mx-auto w-full">
+        <button
+          onClick={() => setPickerOpen(true)}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors text-sm font-medium"
+        >
+          <Plus size={16} /> Add Exercise
+        </button>
+      </div>
+
+      <ExercisePicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={addExerciseAdHoc} />
 
       {/* Floating action bar */}
       <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] inset-x-0 p-4 bg-background/95 backdrop-blur border-t border-border z-50">
