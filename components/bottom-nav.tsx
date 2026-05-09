@@ -5,7 +5,7 @@ import { Dumbbell, BarChart3, Calendar, User, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/dashboard",  label: "Log",      icon: Dumbbell  },
+  { href: "/home",  label: "Home",      icon: Dumbbell  },
   { href: "/programs",   label: "Plans",     icon: Calendar  },
   { href: "/library",    label: "Library",   icon: BookOpen  },
   { href: "/progress",   label: "Progress",  icon: BarChart3 },
