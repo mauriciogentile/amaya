@@ -20,6 +20,7 @@ interface Props {
 }
 
 const BODY_PARTS = ["", "back", "cardio", "chest", "lower arms", "lower legs", "neck", "shoulders", "upper arms", "upper legs", "waist"];
+const EQUIPMENT_TYPES = ["", "barbell", "dumbbell", "machine", "bodyweight", "cable"];
 const BODY_PART_LABELS: Record<string, string> = {
   "": "All",
   back: "Back", cardio: "Cardio", chest: "Chest",
@@ -31,6 +32,7 @@ const BODY_PART_LABELS: Record<string, string> = {
 export function ExercisePicker({ open, onClose, onSelect }: Props) {
   const [q, setQ] = useState("");
   const [bodyPart, setBodyPart] = useState("");
+  const [equipment, setEquipment] = useState("");
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -41,7 +43,7 @@ export function ExercisePicker({ open, onClose, onSelect }: Props) {
 
   const fetchExercises = useCallback(async (query: string, bp: string, pg: number, append = false) => {
     setLoading(true);
-    const params = new URLSearchParams({ q: query, bodyPart: bp, page: String(pg) });
+    const params = new URLSearchParams({ q: query, bodyPart: bp, equipment: eq, page: String(pg) });
     const res = await fetch(`/api/exercises?${params}`);
     const data = await res.json();
     setExercises(prev => append ? [...prev, ...data.exercises] : data.exercises);
@@ -55,7 +57,7 @@ export function ExercisePicker({ open, onClose, onSelect }: Props) {
     if (!open) return;
     setPage(1);
     setAdded(null);
-    fetchExercises(q, bodyPart, 1, false);
+    fetchExercises(q, bodyPart, equipment, 1, false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, bodyPart, open]);
 
