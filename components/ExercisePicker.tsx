@@ -41,7 +41,7 @@ export function ExercisePicker({ open, onClose, onSelect }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
 
-  const fetchExercises = useCallback(async (query: string, bp: string, pg: number, append = false) => {
+  const fetchExercises = useCallback(async (query: string, bp: string, eq: string, pg: number, append = false) => {
     setLoading(true);
     const params = new URLSearchParams({ q: query, bodyPart: bp, equipment: eq, page: String(pg) });
     const res = await fetch(`/api/exercises?${params}`);
@@ -72,7 +72,7 @@ export function ExercisePicker({ open, onClose, onSelect }: Props) {
     if (!el) return;
     const obs = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore && !loading) {
-        fetchExercises(q, bodyPart, page + 1, true);
+        fetchExercises(q, bodyPart, equipment, page + 1, true);
       }
     }, { threshold: 0.5 });
     obs.observe(el);
