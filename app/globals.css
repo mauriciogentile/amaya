@@ -212,3 +212,14 @@
   --color-emerald-900: oklch(0.332 0.085 55);
   --color-emerald-950: oklch(0.226 0.055 55);
 }
+
+@keyframes pr-flash {
+  0%   { opacity: 0; background: oklch(0.628 0.258 29.23 / 0.10); }
+  15%  { opacity: 1; background: oklch(0.628 0.258 29.23 / 0.20); }
+  70%  { opacity: 1; background: oklch(0.628 0.258 29.23 / 0.15); }
+  100% { opacity: 0; background: transparent; }
+}
+
+.animate-pr-flash {
+  animation: pr-flash 3s ease-out forwards;
+}

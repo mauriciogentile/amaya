@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { use } from "react";
 import { Check, ChevronDown, ChevronUp, Clock, X, Plus, Trash2, Ban, ArrowLeft, Save } from "lucide-react";
 import { ExercisePicker } from "@/components/ExercisePicker";
+import { epley } from "@/lib/strength-score";
 
 const KG_TO_LBS = 2.20462;
 function toDisplay(kg: number | null, imperial: boolean): string {
@@ -91,6 +92,8 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
   const saveTimer = useRef<NodeJS.Timeout | undefined>(undefined);
   const [imperial, setImperial] = useState(false);
   const [lastSets, setLastSets] = useState<Record<string, { setNumber: number; reps: number | null; weightKg: number | null }[]>>({});
+  const [allTimePRs, setAllTimePRs] = useState<Record<string, number>>({});
+  const [newPR, setNewPR] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
 
   // Edit mode: either ?mode=edit or workout is already complete
@@ -136,6 +139,11 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
               };
             }));
           }
+        }).catch(() => {});
+        // Fetch all-time PRs
+        const prQs = new URLSearchParams({ names: names.join(","), excludeId: w._id });
+        fetch(`/api/workouts/prs?${prQs}`).then(r => r.json()).then(prs => {
+          setAllTimePRs(prs);
         }).catch(() => {});
       }
     });
@@ -214,6 +222,21 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
     const ex = exercises[exIdx];
     const set = ex.sets[setIdx];
     if (!set.done && (set.reps === null || set.reps <= 0)) return;
+
+    // PR detection — only when completing (not un-completing) a set
+    if (!set.done && set.weightKg && set.reps) {
+      const newRM = epley(set.weightKg, set.reps);
+      const currentPR = allTimePRs[ex.exerciseName] ?? 0;
+      if (newRM > currentPR) {
+        setAllTimePRs(prev => ({ ...prev, [ex.exerciseName]: newRM }));
+        setNewPR(ex.exerciseName);
+        if (typeof navigator !== "undefined" && navigator.vibrate) {
+          navigator.vibrate([200, 50, 200]);
+        }
+        setTimeout(() => setNewPR(null), 3000);
+      }
+    }
+
     setExercises(prev => {
       const next = prev.map((ex, ei) => ei !== exIdx ? ex : {
         ...ex,
@@ -312,6 +335,15 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
     <div className="flex flex-col min-h-screen bg-background pb-48">
       {resting && !editMode && <RestTimer endsAt={resting.endsAt} totalSeconds={resting.totalSeconds} onDone={stopResting} />}
 
+      {/* PR Flash Overlay */}
+      {newPR && (
+        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center pointer-events-none animate-pr-flash">
+          <div className="text-6xl mb-4">🏆</div>
+          <div className="text-3xl font-bold text-primary">New PR!</div>
+          <div className="text-sm text-muted-foreground mt-2">{newPR}</div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))]">
         <div className="max-w-lg mx-auto flex items-center justify-between">
@@ -378,7 +410,12 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${exDone ? "bg-primary" : "bg-muted"}`}>
                   {exDone ? <Check size={14} className="text-primary-foreground" /> : <span className="text-xs text-foreground font-bold">{ei + 1}</span>}
                 </div>
-                <p className={`flex-1 font-semibold text-sm ${exDone ? "text-primary" : "text-foreground"}`}>{ex.exerciseName}</p>
+                <div className="flex-1 min-w-0">
+                  <p className={`font-semibold text-sm ${exDone ? "text-primary" : "text-foreground"}`}>{ex.exerciseName}</p>
+                  {allTimePRs[ex.exerciseName] != null && (
+                    <p className="text-[10px] text-muted-foreground">🏆 PR: {Math.round(allTimePRs[ex.exerciseName])} kg est. 1RM</p>
+                  )}
+                </div>
                 {isCollapsed ? <ChevronDown size={16} className="text-muted-foreground" /> : <ChevronUp size={16} className="text-muted-foreground" />}
               </button>
 
