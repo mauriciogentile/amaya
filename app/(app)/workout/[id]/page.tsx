@@ -44,7 +44,23 @@ interface Workout {
   restTimerEndsAt?: string | null;
 }
 
-function RestTimer({ endsAt, totalSeconds, onDone }: { endsAt: number; totalSeconds: number; onDone: () => void }) {
+function smartRest(
+  weightKg: number | null,
+  reps: number | null,
+  prRM: number | undefined,
+  defaultSeconds: number
+): { seconds: number; reason: string } {
+  if (weightKg && reps && prRM && prRM > 0) {
+    const intensity = epley(weightKg, reps) / prRM;
+    if (intensity >= 0.90) return { seconds: 180, reason: "Heavy set — rest longer 💪" };
+    if (intensity >= 0.75) return { seconds: 120, reason: "Solid set — take your time 👊" };
+    if (intensity >= 0.50) return { seconds: 90,  reason: "Good work — standard rest 👍" };
+    return { seconds: 60, reason: "Light set — keep moving ⚡" };
+  }
+  return { seconds: defaultSeconds || 90, reason: "Rest" };
+}
+
+function RestTimer({ endsAt, totalSeconds, onDone, reason }: { endsAt: number; totalSeconds: number; onDone: () => void; reason?: string }) {
   const calcLeft = () => Math.max(0, Math.round((endsAt - Date.now()) / 1000));
   const [left, setLeft] = useState(calcLeft);
   const onDoneRef = useRef(onDone);
@@ -70,7 +86,7 @@ function RestTimer({ endsAt, totalSeconds, onDone }: { endsAt: number; totalSeco
             <span className="text-3xl font-bold text-foreground tabular-nums">{mm}:{ss}</span>
           </div>
         </div>
-        <p className="text-muted-foreground text-sm">Rest · tap to skip</p>
+        <p className="text-muted-foreground text-sm">{reason && reason !== "Rest" ? reason : "Rest"} · tap to skip</p>
       </div>
     </div>
   );
@@ -83,7 +99,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [exercises, setExercises] = useState<WorkoutExercise[]>([]);
   const [collapsed, setCollapsed] = useState<Record<number, boolean>>({});
-  const [resting, setResting] = useState<{ endsAt: number; totalSeconds: number } | null>(null);
+  const [resting, setResting] = useState<{ endsAt: number; totalSeconds: number; reason: string } | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [finishing, setFinishing] = useState(false);
   const [aborting, setAborting] = useState(false);
@@ -112,7 +128,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
         if (endsAt > Date.now()) {
           // Infer totalSeconds from the endsAt — cap at 600 to be safe
           const secondsLeft = Math.round((endsAt - Date.now()) / 1000);
-          setResting({ endsAt, totalSeconds: secondsLeft }); // total unknown; use remaining
+          setResting({ endsAt, totalSeconds: secondsLeft, reason: "Rest" }); // total unknown; use remaining
         }
       }
       // Fetch last sets for all exercises in this workout
@@ -193,9 +209,9 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
     }).catch(() => {});
   }, [id]);
 
-  function startResting(seconds: number) {
+  function startResting(seconds: number, reason = "Rest") {
     const endsAt = Date.now() + seconds * 1000;
-    setResting({ endsAt, totalSeconds: seconds });
+    setResting({ endsAt, totalSeconds: seconds, reason });
     persistRestTimer(new Date(endsAt).toISOString());
   }
 
@@ -246,7 +262,10 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
       return next;
     });
     // No rest timer in edit mode
-    if (!set.done && !editMode) startResting(ex.restSeconds || 90);
+    if (!set.done && !editMode) {
+      const { seconds, reason } = smartRest(set.weightKg, set.reps, allTimePRs[ex.exerciseName], ex.restSeconds);
+      startResting(seconds, reason);
+    }
   }
 
   function addSet(exIdx: number) {
@@ -333,7 +352,7 @@ export default function WorkoutPage({ params }: { params: Promise<{ id: string }
 
   return (
     <div className="flex flex-col min-h-screen bg-background pb-48">
-      {resting && !editMode && <RestTimer endsAt={resting.endsAt} totalSeconds={resting.totalSeconds} onDone={stopResting} />}
+      {resting && !editMode && <RestTimer endsAt={resting.endsAt} totalSeconds={resting.totalSeconds} reason={resting.reason} onDone={stopResting} />}
 
       {/* PR Flash Overlay */}
       {newPR && (
