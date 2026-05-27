@@ -11,7 +11,18 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   await connectDB();
-  const workout = await Workout.findOne({ _id: id, userId: session.user.id }).lean();
+  const raw = await Workout.findOne({ _id: id, userId: session.user.id })
+    .populate("exercises.exerciseId", "imageUrl gifUrl")
+    .lean() as any;
+  // Merge imageUrl from populated exerciseId into each exercise
+  const workout = raw ? {
+    ...raw,
+    exercises: (raw.exercises || []).map((ex: any) => ({
+      ...ex,
+      imageUrl: ex.exerciseId?.imageUrl || ex.exerciseId?.gifUrl || "",
+      exerciseId: ex.exerciseId?._id ?? ex.exerciseId,
+    })),
+  } : null;
   if (!workout) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(workout);
 }
